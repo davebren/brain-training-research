@@ -1,4 +1,4 @@
-package org.eski.shadyback
+package org.eski.menoback
 
 interface Platform {
     val name: String
