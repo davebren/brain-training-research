@@ -1,4 +1,4 @@
-package org.eski.menoback.ui
+package org.eski.menoback.ui.game
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
