@@ -11,30 +11,36 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import org.eski.menoback.model.Tetrimino
+import org.eski.menoback.model.Board
+import org.eski.util.deepCopy
 
 @Composable
 fun GameBoard(
-  board: Array<IntArray>,
-  currentTetrimino: Tetrimino?,
-  currentPiecePosition: Tetrimino.Position,
+  vm: GameScreenViewModel,
   modifier: Modifier = Modifier
 ) {
+  val board: Board by vm.board.collectAsState()
+
+  val currentTetrimino = vm.currentTetrimino
+  val currentPosition = vm.currentPiecePosition
+
   // Create a mutable copy of the board that includes the current piece
-  val displayBoard = remember(board, currentTetrimino, currentPiecePosition) {
-    val copy = Array(board.size) { row -> IntArray(board[0].size) { col -> board[row][col] } }
+  val displayBoard = remember(currentTetrimino, currentPosition) {
+    val copy = board.matrix.deepCopy()
 
     // Add current piece to the display board
     if (currentTetrimino != null) {
       for (row in currentTetrimino.shape.indices) {
         for (col in currentTetrimino.shape[row].indices) {
           if (currentTetrimino.shape[row][col] != 0) {
-            val boardRow = currentPiecePosition.row + row
-            val boardCol = currentPiecePosition.col + col
+            val boardRow = currentPosition.row + row
+            val boardCol = currentPosition.col + col
 
             if (boardRow >= 0 && boardRow < copy.size &&
               boardCol >= 0 && boardCol < copy[0].size) {

@@ -37,9 +37,7 @@ fun GameScreen(
                 horizontalArrangement = Arrangement.Center
             ) {
                 GameBoard(
-                    board = vm.board,
-                    currentTetrimino = vm.currentTetrimino,
-                    currentPiecePosition = vm.currentPiecePosition,
+                    vm,
                     modifier = Modifier.fillMaxHeight()
                 )
 

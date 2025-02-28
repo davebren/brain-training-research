@@ -12,7 +12,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import org.eski.menoback.model.Board
 import org.eski.menoback.model.Tetrimino
+import org.eski.menoback.model.boardHeight
+import org.eski.menoback.model.boardWidth
+import org.eski.util.deepCopy
 import kotlin.random.Random
 
 
@@ -20,18 +24,12 @@ const val nbackMatchBias = 0.15f
 const val GAME_DURATION_SECONDS = 60
 
 class GameScreenViewModel : ViewModel() {
-  // Size of the game board
-  private val boardWidth = 10
-  private val boardHeight = 20
 
   // Game state
   private val _gameState = MutableStateFlow<GameState>(GameState.NotStarted)
   val gameState: StateFlow<GameState> = _gameState.asStateFlow()
 
-  // Game board representation: 0 is empty, other values represent different block types
-  private var _board = Array(boardHeight) { IntArray(boardWidth) { 0 } }
-  var board by mutableStateOf(_board)
-    private set
+  val board = MutableStateFlow(Board())
 
   // Current piece
   private var _currentTetrimino by mutableStateOf<Tetrimino?>(null)
@@ -121,9 +119,8 @@ class GameScreenViewModel : ViewModel() {
 
   fun resetGame() {
     gameJob?.cancel()
-    timerJob?.cancel()  // Cancel timer job
-    _board = Array(boardHeight) { IntArray(boardWidth) { 0 } }
-    board = _board
+    timerJob?.cancel()
+    board.value = Board()
     _currentTetrimino = null
     _nextTetrimino = null
     tetriminoHistory.clear()
@@ -151,7 +148,7 @@ class GameScreenViewModel : ViewModel() {
 
     if (!moveTetriminoDown()) {
       lockPiece()
-      val completedLines = checkCompletedLines()
+      val completedLines = clearFilledRows()
       addScore(completedLines)
 
       if (!spawnNewPiece()) {
@@ -279,7 +276,7 @@ class GameScreenViewModel : ViewModel() {
           }
 
           // Check collision with existing blocks
-          if (_board[boardRow][boardCol] != 0) {
+          if (board.value.matrix[boardRow][boardCol] != 0) {
             return false
           }
         }
@@ -294,44 +291,45 @@ class GameScreenViewModel : ViewModel() {
 
     if (!nBackDecisionMade) nBackNoMatch()
 
-    // Add the piece to the board
-    for (row in _currentTetrimino!!.shape.indices) {
-      for (col in _currentTetrimino!!.shape[row].indices) {
-        if (_currentTetrimino!!.shape[row][col] != 0) {
-          val boardRow = _currentPiecePosition.row + row
-          val boardCol = _currentPiecePosition.col + col
+    val boardUpdate = mutableMapOf<Int, Map<Int, Int>>()
 
-          if (boardRow >= 0 && boardRow < boardHeight &&
-            boardCol >= 0 && boardCol < boardWidth) {
-            _board[boardRow][boardCol] = _currentTetrimino!!.type
-          }
-        }
+    _currentTetrimino?.shape?.forEachIndexed { row, columns ->
+      val rowUpdate = mutableMapOf<Int, Int>()
+      boardUpdate[row + _currentPiecePosition.row] = rowUpdate
+
+      columns.forEachIndexed { column, tetriminoType ->
+        if (tetriminoType != 0) rowUpdate[column + _currentPiecePosition.col] = tetriminoType
       }
     }
 
-    // Update the board state
-    board = _board.map { it.copyOf() }.toTypedArray()
+    board.value = board.value.copy(boardUpdate)
   }
 
-  private fun checkCompletedLines(): Int {
+  private fun clearFilledRows(): Int {
     var completedLines = 0
+    val newMatrix = board.value.matrix.deepCopy()
 
+    // Iterate from the bottom of the well to the top.
     for (row in boardHeight - 1 downTo 0) {
-      if (_board[row].all { it != 0 }) {
+      val columns = newMatrix[row]
+
+      if (columns.all { it != 0 }) {
         // Remove the line and shift everything down
         for (r in row downTo 1) {
-          _board[r] = _board[r - 1].copyOf()
+          newMatrix[r] = newMatrix[r - 1].copyOf()
         }
         // Clear the top line
-        _board[0] = IntArray(boardWidth) { 0 }
+        newMatrix[0] = IntArray(boardWidth) { 0 }
 
         completedLines++
+      }
+      else {
+        newMatrix[row] = columns
       }
     }
 
     if (completedLines > 0) {
-      // Update the board state
-      board = _board.map { it.copyOf() }.toTypedArray()
+      board.value = Board(newMatrix)
     }
 
     return completedLines
