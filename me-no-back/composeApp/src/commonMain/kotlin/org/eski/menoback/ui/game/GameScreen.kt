@@ -16,6 +16,7 @@ fun GameScreen(
 ) {
     val gameState by vm.gameState.collectAsState()
 
+    KeyboardInput(vm)
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -42,7 +43,7 @@ fun GameScreen(
             ) {
                 GameBoard(
                     board = vm.board,
-                    currentPiece = vm.currentPiece,
+                    currentTetrimino = vm.currentTetrimino,
                     currentPiecePosition = vm.currentPiecePosition,
                     modifier = Modifier.fillMaxHeight()
                 )

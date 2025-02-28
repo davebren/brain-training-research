@@ -15,29 +15,30 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import org.eski.menoback.model.Tetrimino
 
 @Composable
 fun GameBoard(
   board: Array<IntArray>,
-  currentPiece: Piece?,
-  currentPiecePosition: Position,
+  currentTetrimino: Tetrimino?,
+  currentPiecePosition: Tetrimino.Position,
   modifier: Modifier = Modifier
 ) {
   // Create a mutable copy of the board that includes the current piece
-  val displayBoard = remember(board, currentPiece, currentPiecePosition) {
+  val displayBoard = remember(board, currentTetrimino, currentPiecePosition) {
     val copy = Array(board.size) { row -> IntArray(board[0].size) { col -> board[row][col] } }
 
     // Add current piece to the display board
-    if (currentPiece != null) {
-      for (row in currentPiece.shape.indices) {
-        for (col in currentPiece.shape[row].indices) {
-          if (currentPiece.shape[row][col] != 0) {
+    if (currentTetrimino != null) {
+      for (row in currentTetrimino.shape.indices) {
+        for (col in currentTetrimino.shape[row].indices) {
+          if (currentTetrimino.shape[row][col] != 0) {
             val boardRow = currentPiecePosition.row + row
             val boardCol = currentPiecePosition.col + col
 
             if (boardRow >= 0 && boardRow < copy.size &&
               boardCol >= 0 && boardCol < copy[0].size) {
-              copy[boardRow][boardCol] = currentPiece.type
+              copy[boardRow][boardCol] = currentTetrimino.type
             }
           }
         }

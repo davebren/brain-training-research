@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import org.eski.menoback.model.Tetrimino
 import kotlin.random.Random
 
 class GameScreenViewModel : ViewModel() {
@@ -29,19 +30,19 @@ class GameScreenViewModel : ViewModel() {
     private set
 
   // Current piece
-  private var _currentPiece by mutableStateOf<Piece?>(null)
-  val currentPiece: Piece? get() = _currentPiece
+  private var _currentTetrimino by mutableStateOf<Tetrimino?>(null)
+  val currentTetrimino: Tetrimino? get() = _currentTetrimino
 
   // Position of current piece
-  private var _currentPiecePosition by mutableStateOf(Position(0, 0))
-  val currentPiecePosition: Position get() = _currentPiecePosition
+  private var _currentPiecePosition by mutableStateOf(Tetrimino.Position(0, 0))
+  val currentPiecePosition: Tetrimino.Position get() = _currentPiecePosition
 
   // Next piece that will appear
-  private var _nextPiece by mutableStateOf<Piece?>(null)
-  val nextPiece: Piece? get() = _nextPiece
+  private var _nextTetrimino by mutableStateOf<Tetrimino?>(null)
+  val nextTetrimino: Tetrimino? get() = _nextTetrimino
 
   // N-back history of pieces (maintains the sequence of previous pieces)
-  private val pieceHistory = mutableListOf<Piece>()
+  private val tetriminoHistory = mutableListOf<Tetrimino>()
 
   // Current n-back level
   private var _nBackLevel by mutableStateOf(1)
@@ -70,10 +71,6 @@ class GameScreenViewModel : ViewModel() {
   // Flag to know if player has already made an n-back decision for current piece
   private var nBackDecisionMade = false
 
-  init {
-    // Nothing to initialize yet - we'll start the game with startGame()
-  }
-
   fun startGame() {
     if (_gameState.value != GameState.Running) {
       resetGame()
@@ -101,9 +98,9 @@ class GameScreenViewModel : ViewModel() {
     gameJob?.cancel()
     _board = Array(boardHeight) { IntArray(boardWidth) { 0 } }
     board = _board
-    _currentPiece = null
-    _nextPiece = null
-    pieceHistory.clear()
+    _currentTetrimino = null
+    _nextTetrimino = null
+    tetriminoHistory.clear()
     _nBackLevel = 1
     _nBackStreak = 0
     _score = 0
@@ -147,36 +144,36 @@ class GameScreenViewModel : ViewModel() {
     }
   }
 
-  fun movePieceLeft() {
+  fun leftClicked() {
     if (_gameState.value != GameState.Running) return
 
     val newPosition = _currentPiecePosition.copy(col = _currentPiecePosition.col - 1)
-    if (isValidPosition(_currentPiece, newPosition)) {
+    if (isValidPosition(_currentTetrimino, newPosition)) {
       _currentPiecePosition = newPosition
     }
   }
 
-  fun movePieceRight() {
+  fun rightClicked() {
     if (_gameState.value != GameState.Running) return
 
     val newPosition = _currentPiecePosition.copy(col = _currentPiecePosition.col + 1)
-    if (isValidPosition(_currentPiece, newPosition)) {
+    if (isValidPosition(_currentTetrimino, newPosition)) {
       _currentPiecePosition = newPosition
     }
   }
 
-  fun rotatePiece() {
-    if (_gameState.value != GameState.Running || _currentPiece == null) return
+  fun rotatePiece(direction: Rotation) {
+    if (_gameState.value != GameState.Running || _currentTetrimino == null) return
 
-    val rotatedPiece = _currentPiece!!.rotate()
+    val rotatedPiece = _currentTetrimino!!.rotate(direction)
     if (isValidPosition(rotatedPiece, _currentPiecePosition)) {
-      _currentPiece = rotatedPiece
+      _currentTetrimino = rotatedPiece
     } else {
       // Try wall kick (adjust position if rotation would cause collision)
       for (offset in listOf(-1, 1, -2, 2)) {
         val newPosition = _currentPiecePosition.copy(col = _currentPiecePosition.col + offset)
         if (isValidPosition(rotatedPiece, newPosition)) {
-          _currentPiece = rotatedPiece
+          _currentTetrimino = rotatedPiece
           _currentPiecePosition = newPosition
           break
         }
@@ -201,9 +198,9 @@ class GameScreenViewModel : ViewModel() {
     if (_gameState.value != GameState.Running || nBackDecisionMade) return
 
     // Check if the current piece matches the n-back piece
-    val isCorrect = if (pieceHistory.size > _nBackLevel) {
-      val nBackPiece = pieceHistory[pieceHistory.size - _nBackLevel - 1]
-      _currentPiece?.type == nBackPiece.type
+    val isCorrect = if (tetriminoHistory.size > _nBackLevel) {
+      val nBackPiece = tetriminoHistory[tetriminoHistory.size - _nBackLevel - 1]
+      _currentTetrimino?.type == nBackPiece.type
     } else {
       false // Not enough history yet
     }
@@ -215,9 +212,9 @@ class GameScreenViewModel : ViewModel() {
     if (_gameState.value != GameState.Running || nBackDecisionMade) return
 
     // Check if the current piece does NOT match the n-back piece
-    val isCorrect = if (pieceHistory.size > _nBackLevel) {
-      val nBackPiece = pieceHistory[pieceHistory.size - _nBackLevel - 1]
-      _currentPiece?.type != nBackPiece.type
+    val isCorrect = if (tetriminoHistory.size > _nBackLevel) {
+      val nBackPiece = tetriminoHistory[tetriminoHistory.size - _nBackLevel - 1]
+      _currentTetrimino?.type != nBackPiece.type
     } else {
       true // Not enough history yet, so "no match" is correct
     }
@@ -249,14 +246,15 @@ class GameScreenViewModel : ViewModel() {
     }
   }
 
-  // Helper methods
+  private fun isValidPosition(
+    tetrimino: Tetrimino?,
+    position: Tetrimino.Position
+  ): Boolean {
+    if (tetrimino == null) return false
 
-  private fun isValidPosition(piece: Piece?, position: Position): Boolean {
-    if (piece == null) return false
-
-    for (row in piece.shape.indices) {
-      for (col in piece.shape[row].indices) {
-        if (piece.shape[row][col] != 0) {
+    for (row in tetrimino.shape.indices) {
+      for (col in tetrimino.shape[row].indices) {
+        if (tetrimino.shape[row][col] != 0) {
           val boardRow = position.row + row
           val boardCol = position.col + col
 
@@ -279,22 +277,22 @@ class GameScreenViewModel : ViewModel() {
 
   private fun canMovePieceDown(): Boolean {
     val newPosition = _currentPiecePosition.copy(row = _currentPiecePosition.row + 1)
-    return isValidPosition(_currentPiece, newPosition)
+    return isValidPosition(_currentTetrimino, newPosition)
   }
 
   private fun lockPiece() {
-    if (_currentPiece == null) return
+    if (_currentTetrimino == null) return
 
     // Add the piece to the board
-    for (row in _currentPiece!!.shape.indices) {
-      for (col in _currentPiece!!.shape[row].indices) {
-        if (_currentPiece!!.shape[row][col] != 0) {
+    for (row in _currentTetrimino!!.shape.indices) {
+      for (col in _currentTetrimino!!.shape[row].indices) {
+        if (_currentTetrimino!!.shape[row][col] != 0) {
           val boardRow = _currentPiecePosition.row + row
           val boardCol = _currentPiecePosition.col + col
 
           if (boardRow >= 0 && boardRow < boardHeight &&
             boardCol >= 0 && boardCol < boardWidth) {
-            _board[boardRow][boardCol] = _currentPiece!!.type
+            _board[boardRow][boardCol] = _currentTetrimino!!.type
           }
         }
       }
@@ -352,84 +350,25 @@ class GameScreenViewModel : ViewModel() {
 
   private fun spawnNewPiece(): Boolean {
     // Use the next piece if available, otherwise generate a new one
-    val spawnedPiece = _nextPiece ?: generateRandomPiece()
-    _nextPiece = generateRandomPiece()
+    val spawnedPiece = _nextTetrimino ?: generateRandomPiece()
+    _nextTetrimino = generateRandomPiece()
 
     // Set the current piece and position
-    _currentPiece = spawnedPiece
-    _currentPiecePosition = Position(row = 0, col = boardWidth / 2 - 2)
+    _currentTetrimino = spawnedPiece
+    _currentPiecePosition = Tetrimino.Position(row = 0, col = boardWidth / 2 - 2)
 
     // Add to history for n-back challenge
     if (spawnedPiece != null) {
-      pieceHistory.add(spawnedPiece)
+      tetriminoHistory.add(spawnedPiece)
       nBackDecisionMade = false
     }
 
     // Check if the new piece can be placed
-    return isValidPosition(_currentPiece, _currentPiecePosition)
+    return isValidPosition(_currentTetrimino, _currentPiecePosition)
   }
 
-  private fun generateRandomPiece(): Piece {
-    val pieceTypes = listOf(
-      Piece(
-        type = 1,
-        shape = arrayOf(
-          intArrayOf(0, 0, 0, 0),
-          intArrayOf(1, 1, 1, 1),
-          intArrayOf(0, 0, 0, 0),
-          intArrayOf(0, 0, 0, 0)
-        )
-      ),
-      Piece(
-        type = 2,
-        shape = arrayOf(
-          intArrayOf(2, 2),
-          intArrayOf(2, 2)
-        )
-      ),
-      Piece(
-        type = 3,
-        shape = arrayOf(
-          intArrayOf(0, 3, 0),
-          intArrayOf(3, 3, 3),
-          intArrayOf(0, 0, 0)
-        )
-      ),
-      Piece(
-        type = 4,
-        shape = arrayOf(
-          intArrayOf(0, 0, 4),
-          intArrayOf(4, 4, 4),
-          intArrayOf(0, 0, 0)
-        )
-      ),
-      Piece(
-        type = 5,
-        shape = arrayOf(
-          intArrayOf(5, 0, 0),
-          intArrayOf(5, 5, 5),
-          intArrayOf(0, 0, 0)
-        )
-      ),
-      Piece(
-        type = 6,
-        shape = arrayOf(
-          intArrayOf(0, 6, 6),
-          intArrayOf(6, 6, 0),
-          intArrayOf(0, 0, 0)
-        )
-      ),
-      Piece(
-        type = 7,
-        shape = arrayOf(
-          intArrayOf(7, 7, 0),
-          intArrayOf(0, 7, 7),
-          intArrayOf(0, 0, 0)
-        )
-      )
-    )
-
-    return pieceTypes[Random.nextInt(pieceTypes.size)]
+  private fun generateRandomPiece(): Tetrimino {
+    return Tetrimino.types[Random.nextInt(Tetrimino.types.size)]
   }
 
   override fun onCleared() {
@@ -444,44 +383,4 @@ enum class GameState {
   Running,
   Paused,
   GameOver
-}
-
-// Position data class
-data class Position(val row: Int, val col: Int)
-
-// Piece data class with rotation logic
-data class Piece(val type: Int, val shape: Array<IntArray>) {
-  fun rotate(): Piece {
-    val rows = shape.size
-    val cols = shape[0].size
-    val newShape = Array(cols) { IntArray(rows) }
-
-    // Rotate 90 degrees clockwise
-    for (row in 0 until rows) {
-      for (col in 0 until cols) {
-        newShape[col][rows - 1 - row] = shape[row][col]
-      }
-    }
-
-    return Piece(type, newShape)
-  }
-
-  // Override equals and hashCode because we use Array which doesn't implement them properly
-  override fun equals(other: Any?): Boolean {
-    if (this === other) return true
-    if (this::class != other?.let { it::class }) return false
-
-    other as Piece
-
-    if (type != other.type) return false
-    if (!shape.contentDeepEquals(other.shape)) return false
-
-    return true
-  }
-
-  override fun hashCode(): Int {
-    var result = type
-    result = 31 * result + shape.contentDeepHashCode()
-    return result
-  }
 }

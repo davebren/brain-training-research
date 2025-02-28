@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -25,6 +24,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.eski.menoback.model.Tetrimino
+import org.eski.menoback.ui.utils.grid
 import org.eski.menoback.ui.utils.grid2
 
 
@@ -37,7 +38,7 @@ fun RowScope.GameSidebar(vm: GameScreenViewModel) {
   ) {
     // Next piece preview
     NextPiecePreview(
-      nextPiece = vm.nextPiece,
+      nextTetrimino = vm.nextTetrimino,
       modifier = Modifier
         .width(120.dp)
         .height(120.dp)
@@ -55,9 +56,9 @@ fun RowScope.GameSidebar(vm: GameScreenViewModel) {
 
     // Game controls
     GameControls(
-      onMoveLeftClicked = { vm.movePieceLeft() },
-      onMoveRightClicked = { vm.movePieceRight() },
-      onRotateClicked = { vm.rotatePiece() },
+      onMoveLeftClicked = { vm.leftClicked() },
+      onMoveRightClicked = { vm.rightClicked() },
+      onRotateClicked = { vm.rotatePiece(Rotation.clockwise) },
       onDropClicked = { vm.dropPiece() }
     )
   }
@@ -65,7 +66,7 @@ fun RowScope.GameSidebar(vm: GameScreenViewModel) {
 
 @Composable
 fun NextPiecePreview(
-  nextPiece: Piece?,
+  nextTetrimino: Tetrimino?,
   modifier: Modifier = Modifier
 ) {
   Column(
@@ -75,23 +76,23 @@ fun NextPiecePreview(
     Text(
       text = "Next Piece",
       fontSize = 16.sp,
-      fontWeight = FontWeight.Bold
+      fontWeight = FontWeight.Bold,
+      color = Color.LightGray
     )
 
     Spacer(modifier = Modifier.height(8.dp))
 
     Box(
       modifier = Modifier
-        .fillMaxWidth()
-        .aspectRatio(1f)
-        .border(2.dp, Color.DarkGray, RoundedCornerShape(4.dp))
-        .padding(8.dp),
+        .width(104.dp)
+        .height(104.dp)
+        .border(2.dp, Color.LightGray, RoundedCornerShape(4.dp))
+        .padding(grid),
       contentAlignment = Alignment.Center
     ) {
-      if (nextPiece != null) {
-        // Determine the size of the piece
-        val pieceRows = nextPiece.shape.size
-        val pieceCols = nextPiece.shape[0].size
+      if (nextTetrimino != null) {
+        val pieceRows = nextTetrimino.shape.size
+        val pieceCols = nextTetrimino.shape[0].size
 
         Column(
           horizontalAlignment = Alignment.CenterHorizontally
@@ -104,8 +105,8 @@ fun NextPiecePreview(
                     .size(20.dp)
                     .padding(1.dp)
                     .background(
-                      if (nextPiece.shape[row][col] != 0) {
-                        when (nextPiece.type) {
+                      if (nextTetrimino.shape[row][col] != 0) {
+                        when (nextTetrimino.type) {
                           1 -> Color.Cyan
                           2 -> Color.Yellow
                           3 -> Color.Magenta
@@ -140,7 +141,8 @@ fun NBackControls(
     Text(
       text = "N-Back Match?",
       fontSize = 16.sp,
-      fontWeight = FontWeight.Bold
+      fontWeight = FontWeight.Bold,
+      color = Color.LightGray,
     )
 
     Spacer(modifier = Modifier.height(8.dp))
