@@ -55,6 +55,7 @@ fun GameScreen(
             }
 
             GameStatus(
+                vm,
                 gameState = gameState,
                 onStartClicked = { vm.startGame() },
                 onResumeClicked = { vm.resumeGame() },

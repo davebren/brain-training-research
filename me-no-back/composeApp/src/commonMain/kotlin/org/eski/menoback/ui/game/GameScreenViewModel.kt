@@ -71,9 +71,22 @@ class GameScreenViewModel : ViewModel() {
   // Flag to know if player has already made an n-back decision for current piece
   private var nBackDecisionMade = false
 
+  // New methods to increase/decrease n-back level before game starts
+  fun increaseNBackLevel() {
+    if (_gameState.value == GameState.NotStarted && _nBackLevel < 15) {
+      _nBackLevel++
+    }
+  }
+
+  fun decreaseNBackLevel() {
+    if (_gameState.value == GameState.NotStarted && _nBackLevel > 1) {
+      _nBackLevel--
+    }
+  }
+
   fun startGame() {
     if (_gameState.value != GameState.Running) {
-      resetGame()
+      resetGameExceptNBackLevel()
       _gameState.value = GameState.Running
       spawnNewPiece()
       startGameLoop()
@@ -101,12 +114,26 @@ class GameScreenViewModel : ViewModel() {
     _currentTetrimino = null
     _nextTetrimino = null
     tetriminoHistory.clear()
-    _nBackLevel = 1
+    // Keep n-back level the same - don't reset it
     _nBackStreak = 0
     _score = 0
     _multiplier = 1.0f
     _gameSpeed = 1000L
     _gameState.value = GameState.NotStarted
+  }
+
+  // Reset everything except n-back level
+  private fun resetGameExceptNBackLevel() {
+    gameJob?.cancel()
+    _board = Array(boardHeight) { IntArray(boardWidth) { 0 } }
+    board = _board
+    _currentTetrimino = null
+    _nextTetrimino = null
+    tetriminoHistory.clear()
+    _nBackStreak = 0
+    _score = 0
+    _multiplier = 1.0f
+    _gameSpeed = 1000L
   }
 
   private fun startGameLoop() {
@@ -235,10 +262,7 @@ class GameScreenViewModel : ViewModel() {
       // Add n-back points
       _score += 10 * _nBackLevel
 
-      // Increase n-back level periodically
-      if (_nBackStreak % 10 == 0 && _nBackLevel < 3) {
-        _nBackLevel++
-      }
+      // Removed: No longer automatically increase n-back level
     } else {
       // Incorrect n-back decision
       _nBackStreak = 0

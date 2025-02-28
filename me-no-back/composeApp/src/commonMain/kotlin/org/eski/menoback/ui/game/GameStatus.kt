@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun GameStatus(
+  vm: GameScreenViewModel,
   modifier: Modifier = Modifier,
   gameState: GameState,
   onStartClicked: () -> Unit,
@@ -34,9 +35,18 @@ fun GameStatus(
   onResetClicked: () -> Unit
 ) {
   Column(
-    modifier,
+    modifier = modifier,
     horizontalAlignment = Alignment.CenterHorizontally
   ) {
+    // Show n-back level selector only when game is not started
+    if (gameState == GameState.NotStarted || gameState == GameState.GameOver) {
+      Spacer(modifier = Modifier.height(8.dp))
+
+      NBackLevelSelector(vm)
+
+      Spacer(modifier = Modifier.height(16.dp))
+    }
+
     Text(
       text = when (gameState) {
         GameState.NotStarted -> "Press Start to begin"

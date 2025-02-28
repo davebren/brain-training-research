@@ -33,10 +33,7 @@ fun GameControls(
     horizontalAlignment = Alignment.CenterHorizontally
   ) {
     // N-Back controls
-    NBackControls(
-      onMatchClicked = { vm.nBackMatch() },
-      onNoMatchClicked = { vm.nBackNoMatch() }
-    )
+    NBackControls(vm)
 
     // Rotate button
     Button(
@@ -91,14 +88,13 @@ fun GameControls(
 
 @Composable
 fun NBackControls(
-  onMatchClicked: () -> Unit,
-  onNoMatchClicked: () -> Unit
+  vm: GameScreenViewModel,
 ) {
   Column(
     horizontalAlignment = Alignment.CenterHorizontally
   ) {
     Text(
-      text = "N-Back Match?",
+      text = "${vm.nBackLevel}-Back Match?",
       fontSize = 16.sp,
       fontWeight = FontWeight.Bold,
       color = Color.LightGray,
@@ -111,7 +107,7 @@ fun NBackControls(
       horizontalArrangement = Arrangement.SpaceEvenly
     ) {
       Button(
-        onClick = onMatchClicked,
+        onClick = { vm.nBackMatch() },
         colors = ButtonDefaults.buttonColors(backgroundColor = Color.Green)
       ) {
         Text("Match")
