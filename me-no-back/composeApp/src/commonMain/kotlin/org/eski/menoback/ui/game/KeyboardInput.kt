@@ -70,6 +70,7 @@ fun KeyboardInput(vm: GameScreenViewModel) {
         when(event.key) {
           Key.DirectionLeft -> leftPressed = false
           Key.DirectionRight -> rightPressed = false
+          Key.Z -> vm.nBackMatch()
         }
       }
 

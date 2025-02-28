@@ -27,17 +27,20 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun GameControls(
-  onMoveLeftClicked: () -> Unit,
-  onMoveRightClicked: () -> Unit,
-  onRotateClicked: () -> Unit,
-  onDropClicked: () -> Unit
+  vm: GameScreenViewModel,
 ) {
   Column(
     horizontalAlignment = Alignment.CenterHorizontally
   ) {
+    // N-Back controls
+    NBackControls(
+      onMatchClicked = { vm.nBackMatch() },
+      onNoMatchClicked = { vm.nBackNoMatch() }
+    )
+
     // Rotate button
     Button(
-      onClick = onRotateClicked,
+      onClick = { vm.rotatePiece(Rotation.clockwise) },
       modifier = Modifier.fillMaxWidth()
     ) {
       Icon(Icons.Filled.Refresh, contentDescription = "Rotate")
@@ -54,7 +57,7 @@ fun GameControls(
       horizontalArrangement = Arrangement.SpaceEvenly
     ) {
       Button(
-        onClick = onMoveLeftClicked,
+        onClick = { vm.leftClicked() },
         modifier = Modifier.weight(1f)
       ) {
         Icon(Icons.Filled.ArrowBack, contentDescription = "Move Left")
@@ -63,7 +66,7 @@ fun GameControls(
       Spacer(modifier = Modifier.width(8.dp))
 
       Button(
-        onClick = onMoveRightClicked,
+        onClick = { vm.rightClicked() },
         modifier = Modifier.weight(1f)
       ) {
         Icon(Icons.Filled.ArrowForward, contentDescription = "Move Right")
@@ -74,7 +77,7 @@ fun GameControls(
 
     // Drop button
     Button(
-      onClick = onDropClicked,
+      onClick = { vm.dropPiece() },
       modifier = Modifier.fillMaxWidth(),
       colors = ButtonDefaults.buttonColors(backgroundColor = Color.Blue)
     ) {
@@ -82,6 +85,37 @@ fun GameControls(
 //            Icon(Icons.Filled.ArrowDownward, contentDescription = "Drop")
       Spacer(modifier = Modifier.width(8.dp))
       Text("Drop", color = Color.White)
+    }
+  }
+}
+
+@Composable
+fun NBackControls(
+  onMatchClicked: () -> Unit,
+  onNoMatchClicked: () -> Unit
+) {
+  Column(
+    horizontalAlignment = Alignment.CenterHorizontally
+  ) {
+    Text(
+      text = "N-Back Match?",
+      fontSize = 16.sp,
+      fontWeight = FontWeight.Bold,
+      color = Color.LightGray,
+    )
+
+    Spacer(modifier = Modifier.height(8.dp))
+
+    Row(
+      modifier = Modifier.fillMaxWidth(),
+      horizontalArrangement = Arrangement.SpaceEvenly
+    ) {
+      Button(
+        onClick = onMatchClicked,
+        colors = ButtonDefaults.buttonColors(backgroundColor = Color.Green)
+      ) {
+        Text("Match")
+      }
     }
   }
 }

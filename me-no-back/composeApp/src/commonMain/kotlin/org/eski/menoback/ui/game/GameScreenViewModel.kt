@@ -283,6 +283,8 @@ class GameScreenViewModel : ViewModel() {
   private fun lockPiece() {
     if (_currentTetrimino == null) return
 
+    if (!nBackDecisionMade) nBackNoMatch()
+
     // Add the piece to the board
     for (row in _currentTetrimino!!.shape.indices) {
       for (col in _currentTetrimino!!.shape[row].indices) {

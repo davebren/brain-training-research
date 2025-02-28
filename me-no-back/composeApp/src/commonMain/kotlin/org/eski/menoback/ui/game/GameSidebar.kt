@@ -46,21 +46,12 @@ fun RowScope.GameSidebar(vm: GameScreenViewModel) {
 
     Spacer(modifier = Modifier.height(grid2))
 
-    // N-Back controls
-    NBackControls(
-      onMatchClicked = { vm.nBackMatch() },
-      onNoMatchClicked = { vm.nBackNoMatch() }
-    )
+
 
     Spacer(modifier = Modifier.height(16.dp))
 
     // Game controls
-    GameControls(
-      onMoveLeftClicked = { vm.leftClicked() },
-      onMoveRightClicked = { vm.rightClicked() },
-      onRotateClicked = { vm.rotatePiece(Rotation.clockwise) },
-      onDropClicked = { vm.dropPiece() }
-    )
+    GameControls(vm)
   }
 }
 
@@ -130,40 +121,3 @@ fun NextPiecePreview(
   }
 }
 
-@Composable
-fun NBackControls(
-  onMatchClicked: () -> Unit,
-  onNoMatchClicked: () -> Unit
-) {
-  Column(
-    horizontalAlignment = Alignment.CenterHorizontally
-  ) {
-    Text(
-      text = "N-Back Match?",
-      fontSize = 16.sp,
-      fontWeight = FontWeight.Bold,
-      color = Color.LightGray,
-    )
-
-    Spacer(modifier = Modifier.height(8.dp))
-
-    Row(
-      modifier = Modifier.fillMaxWidth(),
-      horizontalArrangement = Arrangement.SpaceEvenly
-    ) {
-      Button(
-        onClick = onMatchClicked,
-        colors = ButtonDefaults.buttonColors(backgroundColor = Color.Green)
-      ) {
-        Text("Match")
-      }
-
-      Button(
-        onClick = onNoMatchClicked,
-        colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)
-      ) {
-        Text("No Match")
-      }
-    }
-  }
-}
