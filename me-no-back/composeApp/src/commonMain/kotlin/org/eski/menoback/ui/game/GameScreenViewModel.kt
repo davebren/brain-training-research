@@ -157,10 +157,7 @@ class GameScreenViewModel : ViewModel() {
 
       // Check for completed lines
       val completedLines = checkCompletedLines()
-      if (completedLines > 0) {
-        // Apply score based on completed lines and multiplier
-        addScore(completedLines)
-      }
+      addScore(completedLines)
 
       // Spawn a new piece
       if (!spawnNewPiece()) {
@@ -253,18 +250,10 @@ class GameScreenViewModel : ViewModel() {
     nBackDecisionMade = true
 
     if (correct) {
-      // Correct n-back decision
       _nBackStreak++
+      _multiplier = 1.0f + (_nBackStreak * (nBackLevel * 2) * 0.1f)
 
-      // Increase multiplier for clearing lines
-      _multiplier = 1.0f + (_nBackStreak * 0.1f)
-
-      // Add n-back points
-      _score += 10 * _nBackLevel
-
-      // Removed: No longer automatically increase n-back level
     } else {
-      // Incorrect n-back decision
       _nBackStreak = 0
       _multiplier = 1.0f
     }
@@ -355,6 +344,7 @@ class GameScreenViewModel : ViewModel() {
   private fun addScore(completedLines: Int) {
     // Score based on number of lines completed with multiplier
     val baseScore = when (completedLines) {
+      0 -> 20
       1 -> 100
       2 -> 300
       3 -> 500
