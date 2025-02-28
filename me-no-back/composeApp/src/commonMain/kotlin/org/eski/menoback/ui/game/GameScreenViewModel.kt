@@ -15,6 +15,8 @@ import kotlinx.coroutines.launch
 import org.eski.menoback.model.Tetrimino
 import kotlin.random.Random
 
+val nbackMatchBias = 0.15f
+
 class GameScreenViewModel : ViewModel() {
   // Size of the game board
   private val boardWidth = 10
@@ -377,7 +379,13 @@ class GameScreenViewModel : ViewModel() {
   private fun spawnNewPiece(): Boolean {
     // Use the next piece if available, otherwise generate a new one
     val spawnedPiece = _nextTetrimino ?: generateRandomPiece()
-    _nextTetrimino = generateRandomPiece()
+    _nextTetrimino = if (Random.nextFloat() < nbackMatchBias) {
+      if (nBackLevel == 1) {
+        spawnedPiece.copy()
+      } else {
+        tetriminoHistory.getOrNull((tetriminoHistory.size) - nBackLevel) ?: generateRandomPiece()
+      }
+    } else generateRandomPiece()
 
     // Set the current piece and position
     _currentTetrimino = spawnedPiece
