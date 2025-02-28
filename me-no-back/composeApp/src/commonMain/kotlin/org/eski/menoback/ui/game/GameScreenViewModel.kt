@@ -4,18 +4,23 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.eski.menoback.model.Board
 import org.eski.menoback.model.Tetrimino
 import org.eski.menoback.model.boardHeight
 import org.eski.menoback.model.boardWidth
+import org.eski.menoback.model.newTetriminoStartPosition
 import org.eski.util.deepCopy
 import kotlin.random.Random
 
@@ -29,15 +34,15 @@ class GameScreenViewModel : ViewModel() {
   private val _gameState = MutableStateFlow<GameState>(GameState.NotStarted)
   val gameState: StateFlow<GameState> = _gameState.asStateFlow()
 
+  val currentTetrimino = MutableStateFlow<Tetrimino?>(null)
+  val currentPiecePosition = MutableStateFlow<Tetrimino.Position?>(null)
+
   val board = MutableStateFlow(Board())
-
-  // Current piece
-  private var _currentTetrimino by mutableStateOf<Tetrimino?>(null)
-  val currentTetrimino: Tetrimino? get() = _currentTetrimino
-
-  // Position of current piece
-  private var _currentPiecePosition by mutableStateOf(Tetrimino.Position(0, 0))
-  val currentPiecePosition: Tetrimino.Position get() = _currentPiecePosition
+  val displayBoard: StateFlow<Board> = combine(board, currentTetrimino, currentPiecePosition) {
+    board: Board, tetrimino: Tetrimino?, position: Tetrimino.Position? ->
+    if (tetrimino == null || position == null) board
+    else board.with(tetrimino, position)
+  }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), Board())
 
   // Next piece that will appear
   private var _nextTetrimino by mutableStateOf<Tetrimino?>(null)
@@ -121,7 +126,7 @@ class GameScreenViewModel : ViewModel() {
     gameJob?.cancel()
     timerJob?.cancel()
     board.value = Board()
-    _currentTetrimino = null
+    currentTetrimino.value = null
     _nextTetrimino = null
     tetriminoHistory.clear()
     _nBackStreak = 0
@@ -147,7 +152,7 @@ class GameScreenViewModel : ViewModel() {
     if (_gameState.value != GameState.Running) return
 
     if (!moveTetriminoDown()) {
-      lockPiece()
+      lockTetrimino()
       val completedLines = clearFilledRows()
       addScore(completedLines)
 
@@ -160,35 +165,39 @@ class GameScreenViewModel : ViewModel() {
 
   fun leftClicked() {
     if (_gameState.value != GameState.Running) return
+    val position = currentPiecePosition.value ?: return
 
-    val newPosition = _currentPiecePosition.copy(col = _currentPiecePosition.col - 1)
-    if (isValidPosition(_currentTetrimino, newPosition)) {
-      _currentPiecePosition = newPosition
+    val newPosition = position.copy(col = position.col - 1)
+    if (isValidPosition(currentTetrimino.value, newPosition)) {
+      currentPiecePosition.value = newPosition
     }
   }
 
   fun rightClicked() {
     if (_gameState.value != GameState.Running) return
+    val position = currentPiecePosition.value ?: return
 
-    val newPosition = _currentPiecePosition.copy(col = _currentPiecePosition.col + 1)
-    if (isValidPosition(_currentTetrimino, newPosition)) {
-      _currentPiecePosition = newPosition
+    val newPosition = position.copy(col = position.col + 1)
+    if (isValidPosition(currentTetrimino.value, newPosition)) {
+      currentPiecePosition.value = newPosition
     }
   }
 
   fun rotatePiece(direction: Rotation) {
-    if (_gameState.value != GameState.Running || _currentTetrimino == null) return
+    if (_gameState.value != GameState.Running) return
+    val tetrimino = currentTetrimino.value ?: return
+    val position = currentPiecePosition.value ?: return
 
-    val rotatedPiece = _currentTetrimino!!.rotate(direction)
-    if (isValidPosition(rotatedPiece, _currentPiecePosition)) {
-      _currentTetrimino = rotatedPiece
+    val rotatedPiece = tetrimino.rotate(direction)
+    if (isValidPosition(rotatedPiece, position)) {
+      currentTetrimino.value = rotatedPiece
     } else {
       // Try wall kick (adjust position if rotation would cause collision)
       for (offset in listOf(-1, 1, -2, 2)) {
-        val newPosition = _currentPiecePosition.copy(col = _currentPiecePosition.col + offset)
+        val newPosition = position.copy(col = position.col + offset)
         if (isValidPosition(rotatedPiece, newPosition)) {
-          _currentTetrimino = rotatedPiece
-          _currentPiecePosition = newPosition
+          currentTetrimino.value = rotatedPiece
+          currentPiecePosition.value = newPosition
           break
         }
       }
@@ -208,9 +217,12 @@ class GameScreenViewModel : ViewModel() {
   }
 
   private fun moveTetriminoDown(): Boolean {
-    val newPosition = _currentPiecePosition.copy(row = _currentPiecePosition.row + 1)
-    val valid = isValidPosition(_currentTetrimino, newPosition)
-    if (valid) _currentPiecePosition = newPosition
+    val position = currentPiecePosition.value ?: return false
+
+    val newPosition = position.copy(row = position.row + 1)
+    val valid = isValidPosition(currentTetrimino.value, newPosition)
+    if (valid) currentPiecePosition.value = newPosition
+
     return valid
   }
 
@@ -222,7 +234,7 @@ class GameScreenViewModel : ViewModel() {
     // Check if the current piece matches the n-back piece
     val isCorrect = if (tetriminoHistory.size > _nBackLevel) {
       val nBackPiece = tetriminoHistory[tetriminoHistory.size - _nBackLevel - 1]
-      _currentTetrimino?.type == nBackPiece.type
+      currentTetrimino.value?.type == nBackPiece.type
     } else {
       false // Not enough history yet
     }
@@ -236,7 +248,7 @@ class GameScreenViewModel : ViewModel() {
     // Check if the current piece does NOT match the n-back piece
     val isCorrect = if (tetriminoHistory.size > _nBackLevel) {
       val nBackPiece = tetriminoHistory[tetriminoHistory.size - _nBackLevel - 1]
-      _currentTetrimino?.type != nBackPiece.type
+      currentTetrimino.value?.type != nBackPiece.type
     } else {
       true // Not enough history yet, so "no match" is correct
     }
@@ -257,6 +269,7 @@ class GameScreenViewModel : ViewModel() {
     }
   }
 
+  // TODO: Move to Board.kt.
   private fun isValidPosition(
     tetrimino: Tetrimino?,
     position: Tetrimino.Position
@@ -286,19 +299,20 @@ class GameScreenViewModel : ViewModel() {
     return true
   }
 
-  private fun lockPiece() {
-    if (_currentTetrimino == null) return
+  private fun lockTetrimino() {
+    val tetrimino = currentTetrimino.value ?: return
+    val position = currentPiecePosition.value ?: return
 
     if (!nBackDecisionMade) nBackNoMatch()
 
     val boardUpdate = mutableMapOf<Int, Map<Int, Int>>()
 
-    _currentTetrimino?.shape?.forEachIndexed { row, columns ->
+    tetrimino.shape.forEachIndexed { row, columns ->
       val rowUpdate = mutableMapOf<Int, Int>()
-      boardUpdate[row + _currentPiecePosition.row] = rowUpdate
+      boardUpdate[row + position.row] = rowUpdate
 
       columns.forEachIndexed { column, tetriminoType ->
-        if (tetriminoType != 0) rowUpdate[column + _currentPiecePosition.col] = tetriminoType
+        if (tetriminoType != 0) rowUpdate[column + position.col] = tetriminoType
       }
     }
 
@@ -359,7 +373,6 @@ class GameScreenViewModel : ViewModel() {
   }
 
   private fun spawnNewPiece(): Boolean {
-    // Use the next piece if available, otherwise generate a new one
     val spawnedPiece = _nextTetrimino ?: generateRandomPiece()
     _nextTetrimino = if (Random.nextFloat() < nbackMatchBias) {
       if (nBackLevel == 1) {
@@ -369,14 +382,13 @@ class GameScreenViewModel : ViewModel() {
       }
     } else generateRandomPiece()
 
-    // Set the current piece and position
-    _currentTetrimino = spawnedPiece
-    _currentPiecePosition = Tetrimino.Position(row = 0, col = boardWidth / 2 - 2)
+    currentTetrimino.value = spawnedPiece
+    currentPiecePosition.value = newTetriminoStartPosition
 
     tetriminoHistory.add(spawnedPiece)
     nBackDecisionMade = false
 
-    return isValidPosition(_currentTetrimino, _currentPiecePosition)
+    return isValidPosition(currentTetrimino.value, newTetriminoStartPosition)
   }
 
   private fun generateRandomPiece(): Tetrimino {

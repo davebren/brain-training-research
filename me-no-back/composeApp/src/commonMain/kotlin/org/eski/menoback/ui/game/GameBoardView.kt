@@ -13,46 +13,18 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import org.eski.menoback.model.Board
-import org.eski.util.deepCopy
+
 
 @Composable
 fun GameBoard(
   vm: GameScreenViewModel,
   modifier: Modifier = Modifier
 ) {
-  val board: Board by vm.board.collectAsState()
-
-  val currentTetrimino = vm.currentTetrimino
-  val currentPosition = vm.currentPiecePosition
-
-  // Create a mutable copy of the board that includes the current piece
-  val displayBoard = remember(currentTetrimino, currentPosition) {
-    val copy = board.matrix.deepCopy()
-
-    // Add current piece to the display board
-    if (currentTetrimino != null) {
-      for (row in currentTetrimino.shape.indices) {
-        for (col in currentTetrimino.shape[row].indices) {
-          if (currentTetrimino.shape[row][col] != 0) {
-            val boardRow = currentPosition.row + row
-            val boardCol = currentPosition.col + col
-
-            if (boardRow >= 0 && boardRow < copy.size &&
-              boardCol >= 0 && boardCol < copy[0].size) {
-              copy[boardRow][boardCol] = currentTetrimino.type
-            }
-          }
-        }
-      }
-    }
-
-    copy
-  }
+  val displayBoard: Board by vm.displayBoard.collectAsState()
 
   Box(
     modifier = modifier
@@ -64,7 +36,7 @@ fun GameBoard(
       modifier = Modifier.fillMaxSize()
     ) {
       // Draw each row of the game board
-      displayBoard.forEach { row ->
+      displayBoard.matrix.forEach { row ->
         Row(
           modifier = Modifier
             .fillMaxWidth()
