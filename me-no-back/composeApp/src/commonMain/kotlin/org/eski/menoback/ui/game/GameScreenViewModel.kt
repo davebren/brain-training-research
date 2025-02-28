@@ -15,7 +15,9 @@ import kotlinx.coroutines.launch
 import org.eski.menoback.model.Tetrimino
 import kotlin.random.Random
 
+
 val nbackMatchBias = 0.15f
+const val GAME_DURATION_SECONDS = 60
 
 class GameScreenViewModel : ViewModel() {
   // Size of the game board
@@ -73,6 +75,11 @@ class GameScreenViewModel : ViewModel() {
   // Flag to know if player has already made an n-back decision for current piece
   private var nBackDecisionMade = false
 
+  private var _timeRemaining by mutableStateOf(GAME_DURATION_SECONDS)
+  val timeRemaining: Int get() = _timeRemaining
+
+  private var timerJob: Job? = null
+
   // New methods to increase/decrease n-back level before game starts
   fun increaseNBackLevel() {
     if (_gameState.value == GameState.NotStarted && _nBackLevel < 15) {
@@ -88,10 +95,11 @@ class GameScreenViewModel : ViewModel() {
 
   fun startGame() {
     if (_gameState.value != GameState.Running) {
-      resetGameExceptNBackLevel()
+      resetGame()
       _gameState.value = GameState.Running
       spawnNewPiece()
       startGameLoop()
+      startTimer()
     }
   }
 
@@ -99,6 +107,7 @@ class GameScreenViewModel : ViewModel() {
     if (_gameState.value == GameState.Running) {
       _gameState.value = GameState.Paused
       gameJob?.cancel()
+      timerJob?.cancel()
     }
   }
 
@@ -106,37 +115,26 @@ class GameScreenViewModel : ViewModel() {
     if (_gameState.value == GameState.Paused) {
       _gameState.value = GameState.Running
       startGameLoop()
+      startTimer()
     }
   }
 
   fun resetGame() {
     gameJob?.cancel()
+    timerJob?.cancel()  // Cancel timer job
     _board = Array(boardHeight) { IntArray(boardWidth) { 0 } }
     board = _board
     _currentTetrimino = null
     _nextTetrimino = null
     tetriminoHistory.clear()
-    // Keep n-back level the same - don't reset it
     _nBackStreak = 0
     _score = 0
     _multiplier = 1.0f
     _gameSpeed = 1000L
+    _timeRemaining = GAME_DURATION_SECONDS
     _gameState.value = GameState.NotStarted
   }
 
-  // Reset everything except n-back level
-  private fun resetGameExceptNBackLevel() {
-    gameJob?.cancel()
-    _board = Array(boardHeight) { IntArray(boardWidth) { 0 } }
-    board = _board
-    _currentTetrimino = null
-    _nextTetrimino = null
-    tetriminoHistory.clear()
-    _nBackStreak = 0
-    _score = 0
-    _multiplier = 1.0f
-    _gameSpeed = 1000L
-  }
 
   private fun startGameLoop() {
     gameJob?.cancel()
@@ -405,9 +403,27 @@ class GameScreenViewModel : ViewModel() {
     return Tetrimino.types[Random.nextInt(Tetrimino.types.size)]
   }
 
+  private fun startTimer() {
+    timerJob?.cancel()
+    timerJob = gameScope.launch {
+      while (_timeRemaining > 0 && _gameState.value == GameState.Running) {
+        val drift = timeRemaining % 1000L
+        delay(1000L - drift)
+        _timeRemaining--
+      }
+
+      // End the game when timer reaches zero
+      if (_timeRemaining <= 0 && _gameState.value == GameState.Running) {
+        _gameState.value = GameState.GameOver
+        gameJob?.cancel()
+      }
+    }
+  }
+
   override fun onCleared() {
     super.onCleared()
     gameJob?.cancel()
+    timerJob?.cancel()
   }
 }
 

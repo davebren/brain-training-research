@@ -17,10 +17,7 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun GameHeader(
-  score: Int,
-  multiplier: Float,
-  nBackLevel: Int,
-  nBackStreak: Int
+  vm: GameScreenViewModel
 ) {
   Column(
     horizontalAlignment = Alignment.CenterHorizontally
@@ -38,9 +35,11 @@ fun GameHeader(
       modifier = Modifier.fillMaxWidth(),
       horizontalArrangement = Arrangement.SpaceEvenly
     ) {
-      InfoItem(label = "Score", value = score.toString())
-      InfoItem(label = "Multiplier", value = "${multiplier}x")
-      InfoItem(label = "$nBackLevel-Back", value = "Streak: $nBackStreak")
+      InfoItem(label = "Score", value = vm.score.toString())
+      InfoItem(label = "Multiplier", value = "${vm.multiplier}x")
+      InfoItem(label = "${vm.nBackLevel}-Back", value = "Streak: ${vm.nBackStreak}")
+
+      GameTimer(timeRemaining = vm.timeRemaining)
     }
   }
 }

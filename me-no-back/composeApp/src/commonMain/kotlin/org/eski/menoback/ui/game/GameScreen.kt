@@ -28,12 +28,7 @@ fun GameScreen(
                 .padding(grid2),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            GameHeader(
-                score = vm.score,
-                multiplier = vm.multiplier,
-                nBackLevel = vm.nBackLevel,
-                nBackStreak = vm.nBackStreak
-            )
+            GameHeader(vm)
 
             Spacer(modifier = Modifier.height(grid2))
 
