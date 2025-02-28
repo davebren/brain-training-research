@@ -44,11 +44,7 @@ class GameScreenViewModel : ViewModel() {
     else board.with(tetrimino, position)
   }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), Board())
 
-  // Next piece that will appear
-  private var _nextTetrimino by mutableStateOf<Tetrimino?>(null)
-  val nextTetrimino: Tetrimino? get() = _nextTetrimino
-
-  // N-back history of pieces (maintains the sequence of previous pieces)
+  val nextTetrimino = MutableStateFlow<Tetrimino?>(null)
   private val tetriminoHistory = mutableListOf<Tetrimino>()
 
   // Current n-back level
@@ -127,7 +123,7 @@ class GameScreenViewModel : ViewModel() {
     timerJob?.cancel()
     board.value = Board()
     currentTetrimino.value = null
-    _nextTetrimino = null
+    nextTetrimino.value = null
     tetriminoHistory.clear()
     _nBackStreak = 0
     _score = 0
@@ -371,8 +367,8 @@ class GameScreenViewModel : ViewModel() {
   }
 
   private fun spawnNewPiece(): Boolean {
-    val spawnedPiece = _nextTetrimino ?: generateRandomPiece()
-    _nextTetrimino = if (Random.nextFloat() < nbackMatchBias) {
+    val spawnedPiece = nextTetrimino.value ?: generateRandomPiece()
+    nextTetrimino.value = if (Random.nextFloat() < nbackMatchBias) {
       if (nBackLevel == 1) {
         spawnedPiece.copy()
       } else {

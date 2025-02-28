@@ -18,6 +18,8 @@ import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -38,7 +40,7 @@ fun RowScope.GameSidebar(vm: GameScreenViewModel) {
   ) {
     // Next piece preview
     NextPiecePreview(
-      nextTetrimino = vm.nextTetrimino,
+      vm,
       modifier = Modifier
         .width(120.dp)
         .height(120.dp)
@@ -57,15 +59,17 @@ fun RowScope.GameSidebar(vm: GameScreenViewModel) {
 
 @Composable
 fun NextPiecePreview(
-  nextTetrimino: Tetrimino?,
+  vm: GameScreenViewModel,
   modifier: Modifier = Modifier
 ) {
+  val nextTetrimino: Tetrimino? by vm.nextTetrimino.collectAsState()
+
   Column(
     modifier = modifier,
     horizontalAlignment = Alignment.CenterHorizontally
   ) {
     Text(
-      text = "Next Piece",
+      text = "Next:",
       fontSize = 16.sp,
       fontWeight = FontWeight.Bold,
       color = Color.LightGray
@@ -81,38 +85,37 @@ fun NextPiecePreview(
         .padding(grid),
       contentAlignment = Alignment.Center
     ) {
-      if (nextTetrimino != null) {
-        val pieceRows = nextTetrimino.shape.size
-        val pieceCols = nextTetrimino.shape[0].size
+      val tetrimino = nextTetrimino ?: return@Box
+      val pieceRows = tetrimino.shape.size
+      val pieceCols = tetrimino.shape[0].size
 
-        Column(
-          horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-          for (row in 0 until pieceRows) {
-            Row {
-              for (col in 0 until pieceCols) {
-                Box(
-                  modifier = Modifier
-                    .size(20.dp)
-                    .padding(1.dp)
-                    .background(
-                      if (nextTetrimino.shape[row][col] != 0) {
-                        when (nextTetrimino.type) {
-                          1 -> Color.Cyan
-                          2 -> Color.Yellow
-                          3 -> Color.Magenta
-                          4 -> Color.Blue
-                          5 -> Color.Red
-                          6 -> Color.Green
-                          7 -> Color.Red
-                          else -> Color.Gray
-                        }
-                      } else {
-                        Color.Transparent
+      Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+      ) {
+        for (row in 0 until pieceRows) {
+          Row {
+            for (col in 0 until pieceCols) {
+              Box(
+                modifier = Modifier
+                  .size(20.dp)
+                  .padding(1.dp)
+                  .background(
+                    if (tetrimino.shape[row][col] != 0) {
+                      when (tetrimino.type) {
+                        1 -> Color.Cyan
+                        2 -> Color.Yellow
+                        3 -> Color.Magenta
+                        4 -> Color.Blue
+                        5 -> Color.Red
+                        6 -> Color.Green
+                        7 -> Color.Red
+                        else -> Color.Gray
                       }
-                    )
-                )
-              }
+                    } else {
+                      Color.Transparent
+                    }
+                  )
+              )
             }
           }
         }
