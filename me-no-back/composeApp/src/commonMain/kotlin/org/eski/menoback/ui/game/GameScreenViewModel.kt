@@ -16,7 +16,7 @@ import org.eski.menoback.model.Tetrimino
 import kotlin.random.Random
 
 
-val nbackMatchBias = 0.15f
+const val nbackMatchBias = 0.15f
 const val GAME_DURATION_SECONDS = 60
 
 class GameScreenViewModel : ViewModel() {
@@ -149,19 +149,12 @@ class GameScreenViewModel : ViewModel() {
   private fun tick() {
     if (_gameState.value != GameState.Running) return
 
-    if (canMovePieceDown()) {
-      _currentPiecePosition = _currentPiecePosition.copy(row = _currentPiecePosition.row + 1)
-    } else {
-      // Lock the current piece in place
+    if (!moveTetriminoDown()) {
       lockPiece()
-
-      // Check for completed lines
       val completedLines = checkCompletedLines()
       addScore(completedLines)
 
-      // Spawn a new piece
       if (!spawnNewPiece()) {
-        // Game over if can't spawn new piece
         _gameState.value = GameState.GameOver
         gameJob?.cancel()
       }
@@ -208,12 +201,20 @@ class GameScreenViewModel : ViewModel() {
   fun dropPiece() {
     if (_gameState.value != GameState.Running) return
 
-    while (canMovePieceDown()) {
-      _currentPiecePosition = _currentPiecePosition.copy(row = _currentPiecePosition.row + 1)
-    }
-
-    // Immediately lock and spawn new piece
+    while (moveTetriminoDown());
     tick()
+  }
+
+  fun downClicked(): Boolean {
+    if (_gameState.value != GameState.Running) return false
+    return moveTetriminoDown()
+  }
+
+  private fun moveTetriminoDown(): Boolean {
+    val newPosition = _currentPiecePosition.copy(row = _currentPiecePosition.row + 1)
+    val valid = isValidPosition(_currentTetrimino, newPosition)
+    if (valid) _currentPiecePosition = newPosition
+    return valid
   }
 
   // N-back memory challenge functions
@@ -288,11 +289,6 @@ class GameScreenViewModel : ViewModel() {
     return true
   }
 
-  private fun canMovePieceDown(): Boolean {
-    val newPosition = _currentPiecePosition.copy(row = _currentPiecePosition.row + 1)
-    return isValidPosition(_currentTetrimino, newPosition)
-  }
-
   private fun lockPiece() {
     if (_currentTetrimino == null) return
 
@@ -348,7 +344,7 @@ class GameScreenViewModel : ViewModel() {
       1 -> 100
       2 -> 300
       3 -> 500
-      4 -> 800
+      4 -> 1000
       else -> 0
     }
 
@@ -379,13 +375,9 @@ class GameScreenViewModel : ViewModel() {
     _currentTetrimino = spawnedPiece
     _currentPiecePosition = Tetrimino.Position(row = 0, col = boardWidth / 2 - 2)
 
-    // Add to history for n-back challenge
-    if (spawnedPiece != null) {
-      tetriminoHistory.add(spawnedPiece)
-      nBackDecisionMade = false
-    }
+    tetriminoHistory.add(spawnedPiece)
+    nBackDecisionMade = false
 
-    // Check if the new piece can be placed
     return isValidPosition(_currentTetrimino, _currentPiecePosition)
   }
 

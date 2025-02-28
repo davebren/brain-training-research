@@ -23,12 +23,16 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
 import kotlinx.coroutines.delay
 
+const val repeatDelayMillis = 250L
+const val repeatTickMillis = 50L
+
 @Composable
 fun KeyboardInput(vm: GameScreenViewModel) {
   val focusRequester = remember { FocusRequester() }
   var hasFocus by remember { mutableStateOf(false) }
   var leftPressed by remember { mutableStateOf(false) }
   var rightPressed by remember { mutableStateOf(false) }
+  var downPressed by remember { mutableStateOf(false) }
 
   Box(modifier = Modifier
     .focusRequester(focusRequester)
@@ -61,6 +65,12 @@ fun KeyboardInput(vm: GameScreenViewModel) {
             vm.rotatePiece(Rotation.clockwise)
             vm.rotatePiece(Rotation.clockwise)
           }
+          Key.DirectionDown -> {
+            if (!downPressed) {
+              vm.downClicked()
+              downPressed = true
+            }
+          }
 
           Key.Spacebar -> vm.dropPiece()
         }
@@ -70,6 +80,7 @@ fun KeyboardInput(vm: GameScreenViewModel) {
         when(event.key) {
           Key.DirectionLeft -> leftPressed = false
           Key.DirectionRight -> rightPressed = false
+          Key.DirectionDown -> downPressed = false
           Key.Z -> vm.nBackMatch()
         }
       }
@@ -79,18 +90,31 @@ fun KeyboardInput(vm: GameScreenViewModel) {
   )
 
   LaunchedEffect(leftPressed) {
-    delay(250)
+    delay(repeatDelayMillis)
     while (leftPressed) {
       vm.leftClicked()
-      delay(50)
+      delay(repeatTickMillis)
     }
   }
 
   LaunchedEffect(rightPressed) {
-    delay(250)
+    delay(repeatDelayMillis)
     while (rightPressed) {
       vm.rightClicked()
-      delay(50)
+      delay(repeatTickMillis)
+    }
+  }
+
+  LaunchedEffect(downPressed) {
+    delay(repeatDelayMillis)
+    while (downPressed) {
+      val valid = vm.downClicked()
+      if (valid) {
+        delay(repeatTickMillis)
+      } else {
+        downPressed = false
+        delay(repeatTickMillis)
+      }
     }
   }
 
