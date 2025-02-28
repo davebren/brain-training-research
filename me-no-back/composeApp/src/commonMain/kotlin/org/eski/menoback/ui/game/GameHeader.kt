@@ -28,7 +28,8 @@ fun GameHeader(
     Text(
       text = "MeNoBack",
       fontSize = 24.sp,
-      fontWeight = FontWeight.Bold
+      fontWeight = FontWeight.Bold,
+      color = Color.LightGray,
     )
 
     Spacer(modifier = Modifier.height(8.dp))
@@ -57,7 +58,8 @@ private fun InfoItem(label: String, value: String) {
     Text(
       text = value,
       fontSize = 16.sp,
-      fontWeight = FontWeight.Bold
+      fontWeight = FontWeight.Bold,
+      color = Color.LightGray,
     )
   }
 }

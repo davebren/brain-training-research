@@ -37,7 +37,6 @@ fun GameStatus(
     modifier,
     horizontalAlignment = Alignment.CenterHorizontally
   ) {
-    // Display game state
     Text(
       text = when (gameState) {
         GameState.NotStarted -> "Press Start to begin"
@@ -47,7 +46,8 @@ fun GameStatus(
       },
       fontSize = 18.sp,
       fontWeight = FontWeight.Bold,
-      textAlign = TextAlign.Center
+      textAlign = TextAlign.Center,
+      color = Color.LightGray,
     )
 
     Spacer(modifier = Modifier.height(16.dp))
@@ -100,7 +100,6 @@ fun GameStatus(
         }
       }
 
-      // Reset button (always available)
       Button(
         onClick = onResetClicked,
         colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)

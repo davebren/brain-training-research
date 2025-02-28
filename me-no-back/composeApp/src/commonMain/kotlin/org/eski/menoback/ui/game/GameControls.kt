@@ -35,14 +35,6 @@ fun GameControls(
   Column(
     horizontalAlignment = Alignment.CenterHorizontally
   ) {
-    Text(
-      text = "Controls",
-      fontSize = 16.sp,
-      fontWeight = FontWeight.Bold
-    )
-
-    Spacer(modifier = Modifier.height(8.dp))
-
     // Rotate button
     Button(
       onClick = onRotateClicked,
@@ -86,10 +78,10 @@ fun GameControls(
       modifier = Modifier.fillMaxWidth(),
       colors = ButtonDefaults.buttonColors(backgroundColor = Color.Blue)
     ) {
-      Icon(Icons.Filled.KeyboardArrowDown, contentDescription = "Drop")
+      Icon(Icons.Filled.KeyboardArrowDown, contentDescription = "Drop", tint = Color.White)
 //            Icon(Icons.Filled.ArrowDownward, contentDescription = "Drop")
       Spacer(modifier = Modifier.width(8.dp))
-      Text("Drop")
+      Text("Drop", color = Color.White)
     }
   }
 }
