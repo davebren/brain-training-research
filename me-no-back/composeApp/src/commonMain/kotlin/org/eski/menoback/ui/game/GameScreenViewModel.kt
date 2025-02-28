@@ -324,21 +324,19 @@ class GameScreenViewModel : ViewModel() {
     val newMatrix = board.value.matrix.deepCopy()
 
     // Iterate from the bottom of the well to the top.
-    for (row in boardHeight - 1 downTo 0) {
+    var row = boardHeight - 1
+    while (row >= 0) {
       val columns = newMatrix[row]
 
       if (columns.all { it != 0 }) {
-        // Remove the line and shift everything down
+        // Remove the line and shift everything down.
         for (r in row downTo 1) {
           newMatrix[r] = newMatrix[r - 1].copyOf()
         }
-        // Clear the top line
         newMatrix[0] = IntArray(boardWidth) { 0 }
-
         completedLines++
-      }
-      else {
-        newMatrix[row] = columns
+      } else {
+        row--
       }
     }
 

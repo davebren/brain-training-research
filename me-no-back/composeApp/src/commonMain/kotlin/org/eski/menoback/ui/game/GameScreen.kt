@@ -29,22 +29,15 @@ fun GameScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             GameHeader(vm)
-
             Spacer(modifier = Modifier.height(grid2))
 
             Row(
                 modifier = Modifier.weight(1f),
                 horizontalArrangement = Arrangement.Center
             ) {
-                GameBoard(
-                    vm,
-                    modifier = Modifier.fillMaxHeight()
-                )
-
+                GameBoard(vm, modifier = Modifier.fillMaxHeight())
                 Spacer(modifier = Modifier.width(16.dp))
-
                 GameSidebar(vm)
-
             }
 
             GameStatus(
