@@ -50,9 +50,7 @@ class GameScreenViewModel : ViewModel() {
   val nextTetrimino = MutableStateFlow<Tetrimino?>(null)
   private val tetriminoHistory = mutableListOf<Tetrimino>()
 
-  // Current n-back level
-  private var _nBackLevel by mutableStateOf(1)
-  val nBackLevel: Int get() = _nBackLevel
+  val nbackLevel = MutableStateFlow(1)
 
   // N-back correct streak
   private var _nBackStreak by mutableStateOf(0)
@@ -84,14 +82,14 @@ class GameScreenViewModel : ViewModel() {
 
   // New methods to increase/decrease n-back level before game starts
   fun increaseNBackLevel() {
-    if (_gameState.value == GameState.NotStarted && _nBackLevel < 15) {
-      _nBackLevel++
+    if (_gameState.value == GameState.NotStarted && nbackLevel.value < 15) {
+      nbackLevel.value++
     }
   }
 
   fun decreaseNBackLevel() {
-    if (_gameState.value == GameState.NotStarted && _nBackLevel > 1) {
-      _nBackLevel--
+    if (_gameState.value == GameState.NotStarted && nbackLevel.value > 1) {
+      nbackLevel.value--
     }
   }
 
@@ -231,8 +229,8 @@ class GameScreenViewModel : ViewModel() {
     if (_gameState.value != GameState.Running || nBackDecisionMade) return
 
     // Check if the current piece matches the n-back piece
-    val isCorrect = if (tetriminoHistory.size > _nBackLevel) {
-      val nBackPiece = tetriminoHistory[tetriminoHistory.size - _nBackLevel - 1]
+    val isCorrect = if (tetriminoHistory.size > nbackLevel.value) {
+      val nBackPiece = tetriminoHistory[tetriminoHistory.size - nbackLevel.value - 1]
       currentTetrimino.value?.type == nBackPiece.type
     } else {
       false // Not enough history yet
@@ -245,8 +243,8 @@ class GameScreenViewModel : ViewModel() {
     if (_gameState.value != GameState.Running || nBackDecisionMade) return
 
     // Check if the current piece does NOT match the n-back piece
-    val isCorrect = if (tetriminoHistory.size > _nBackLevel) {
-      val nBackPiece = tetriminoHistory[tetriminoHistory.size - _nBackLevel - 1]
+    val isCorrect = if (tetriminoHistory.size > nbackLevel.value) {
+      val nBackPiece = tetriminoHistory[tetriminoHistory.size - nbackLevel.value - 1]
       currentTetrimino.value?.type != nBackPiece.type
     } else {
       true // Not enough history yet, so "no match" is correct
@@ -260,7 +258,7 @@ class GameScreenViewModel : ViewModel() {
 
     if (correct) {
       _nBackStreak++
-      _multiplier = 1.0f + (_nBackStreak * (nBackLevel * 2) * 0.1f)
+      _multiplier = 1.0f + (_nBackStreak * (nbackLevel.value * 2) * 0.1f)
 
     } else {
       _nBackStreak = 0
@@ -372,10 +370,10 @@ class GameScreenViewModel : ViewModel() {
   private fun spawnNewPiece(): Boolean {
     val spawnedPiece = nextTetrimino.value ?: generateRandomPiece()
     nextTetrimino.value = if (Random.nextFloat() < nbackMatchBias) {
-      if (nBackLevel == 1) {
+      if (nbackLevel.value == 1) {
         spawnedPiece.copy()
       } else {
-        tetriminoHistory.getOrNull((tetriminoHistory.size) - nBackLevel) ?: generateRandomPiece()
+        tetriminoHistory.getOrNull((tetriminoHistory.size) - nbackLevel.value) ?: generateRandomPiece()
       }
     } else generateRandomPiece()
 

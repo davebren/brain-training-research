@@ -17,6 +17,8 @@ import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -90,11 +92,13 @@ fun GameControls(
 fun NBackControls(
   vm: GameScreenViewModel,
 ) {
+  val nbackLevel by vm.nbackLevel.collectAsState()
+
   Column(
     horizontalAlignment = Alignment.CenterHorizontally
   ) {
     Text(
-      text = "${vm.nBackLevel}-Back Match?",
+      text = "$nbackLevel-Back Match?",
       fontSize = 16.sp,
       fontWeight = FontWeight.Bold,
       color = Color.LightGray,

@@ -8,6 +8,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -20,12 +22,14 @@ fun NBackLevelSelector(
   vm: GameScreenViewModel,
   modifier: Modifier = Modifier
 ) {
+  val nbackLevel by vm.nbackLevel.collectAsState()
+
   Column(
     modifier = modifier,
     horizontalAlignment = Alignment.CenterHorizontally
   ) {
     Text(
-      text = "${vm.nBackLevel}-Back Level",
+      text = "$nbackLevel-Back Level",
       fontSize = 16.sp,
       fontWeight = FontWeight.Bold,
       color = Color.LightGray
@@ -47,7 +51,7 @@ fun NBackLevelSelector(
       Spacer(modifier = Modifier.width(8.dp))
 
       Text(
-        text = vm.nBackLevel.toString(),
+        text = nbackLevel.toString(),
         fontSize = 20.sp,
         fontWeight = FontWeight.Bold,
         color = Color.White

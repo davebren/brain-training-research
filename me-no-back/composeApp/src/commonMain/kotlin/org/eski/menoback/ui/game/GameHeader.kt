@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -19,6 +21,8 @@ import androidx.compose.ui.unit.sp
 fun GameHeader(
   vm: GameScreenViewModel
 ) {
+  val nbackLevel by vm.nbackLevel.collectAsState()
+
   Column(
     horizontalAlignment = Alignment.CenterHorizontally
   ) {
@@ -37,7 +41,7 @@ fun GameHeader(
     ) {
       InfoItem(label = "Score", value = vm.score.toString())
       InfoItem(label = "Multiplier", value = "${vm.multiplier}x")
-      InfoItem(label = "${vm.nBackLevel}-Back", value = "Streak: ${vm.nBackStreak}")
+      InfoItem(label = "$nbackLevel-Back", value = "Streak: ${vm.nBackStreak}")
 
       GameTimer(timeRemaining = vm.timeRemaining)
     }
