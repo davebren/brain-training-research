@@ -20,7 +20,6 @@ data class Board(
   }
 
   fun with(newTetrimino: Tetrimino, position: Tetrimino.Position): Board {
-    println("Board.with")
     val newMatrix = matrix.deepCopy()
     
     for (row in newTetrimino.shape.indices) {

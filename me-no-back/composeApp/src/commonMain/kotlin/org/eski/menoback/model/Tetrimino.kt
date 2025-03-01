@@ -3,6 +3,7 @@ package org.eski.menoback.model
 import org.eski.menoback.ui.game.Rotation
 
 data class Tetrimino(val type: Int, val shape: Array<IntArray>) {
+
   fun rotate(direction: Rotation): Tetrimino {
     val initialRowCount = shape.size
     val initialColumnCount = shape[0].size
@@ -50,6 +51,8 @@ data class Tetrimino(val type: Int, val shape: Array<IntArray>) {
   data class Position(val row: Int, val col: Int)
 
   companion object {
+    const val lockedType = 8
+
     val types = listOf(
       Tetrimino(
         type = 1,

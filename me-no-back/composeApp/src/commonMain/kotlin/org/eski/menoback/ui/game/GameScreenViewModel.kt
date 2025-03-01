@@ -311,7 +311,7 @@ class GameScreenViewModel : ViewModel() {
       boardUpdate[row + position.row] = rowUpdate
 
       columns.forEachIndexed { column, tetriminoType ->
-        if (tetriminoType != 0) rowUpdate[column + position.col] = tetriminoType
+        if (tetriminoType != 0) rowUpdate[column + position.col] = Tetrimino.lockedType
       }
     }
 
