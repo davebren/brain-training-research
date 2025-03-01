@@ -50,9 +50,7 @@ class GameScreenViewModel : ViewModel() {
 
   val nback = GameNbackViewModel(viewModelScope, _gameState, currentTetrimino)
 
-  // Score
-  private var _score by mutableStateOf(0)
-  val score: Int get() = _score
+  val score = MutableStateFlow<Int>(0)
 
   // Game speed (milliseconds per tick)
   private var _gameSpeed by mutableStateOf(1000L)
@@ -101,7 +99,7 @@ class GameScreenViewModel : ViewModel() {
     nextTetrimino.value = null
     tetriminoHistory.clear()
     nback.streak.value = 0
-    _score = 0
+    score.value = 0
     _gameSpeed = 1000L
     _timeRemaining = GAME_DURATION_SECONDS
     _gameState.value = GameState.NotStarted
@@ -289,14 +287,14 @@ class GameScreenViewModel : ViewModel() {
       else -> 0
     }
 
-    _score += (baseScore * nback.multiplier.value).toInt()
+    score.value += (baseScore * nback.multiplier.value).toInt()
 
     // Increase game speed based on score milestones
-    if (_score > 5000 && _gameSpeed > 500) {
+    if (score.value > 5000 && _gameSpeed > 500) {
       _gameSpeed = 500L
-    } else if (_score > 3000 && _gameSpeed > 700) {
+    } else if (score.value > 3000 && _gameSpeed > 700) {
       _gameSpeed = 700L
-    } else if (_score > 1000 && _gameSpeed > 850) {
+    } else if (score.value > 1000 && _gameSpeed > 850) {
       _gameSpeed = 850L
     }
   }

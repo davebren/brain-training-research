@@ -25,6 +25,7 @@ fun GameHeader(
   val nbackLevel by vm.nback.level.collectAsState()
   val nbackStreak by vm.nback.streak.collectAsState()
   val nbackMultiplierText by vm.nback.multiplierText.collectAsState()
+  val score by vm.score.collectAsState()
 
   Column(
     horizontalAlignment = Alignment.CenterHorizontally
@@ -42,7 +43,7 @@ fun GameHeader(
       modifier = Modifier.fillMaxWidth(),
       horizontalArrangement = Arrangement.SpaceEvenly
     ) {
-      InfoItem(label = "Score", value = vm.score.toString())
+      InfoItem(label = "Score", value = score.toString())
       InfoItem(label = "Multiplier", value = nbackMultiplierText)
       InfoItem(label = "$nbackLevel-Back", value = "Streak: $nbackStreak")
 
