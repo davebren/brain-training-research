@@ -20,7 +20,6 @@ import org.eski.menoback.ui.game.model.Board
 import org.eski.menoback.ui.TetriminoColors
 import org.eski.menoback.ui.game.vm.GameScreenViewModel
 
-
 @Composable
 fun GameBoard(
   vm: GameScreenViewModel,
@@ -58,5 +57,7 @@ fun GameBoard(
         }
       }
     }
+
+    GameOverOverlay(vm = vm)
   }
 }
