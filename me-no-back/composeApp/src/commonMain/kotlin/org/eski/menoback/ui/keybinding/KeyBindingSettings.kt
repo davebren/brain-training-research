@@ -107,19 +107,4 @@ class KeyBindingSettings(val settings: Settings) {
         setDropPiece(defaultDropPiece)
         setNbackMatch(defaultNbackMatch)
     }
-    
-    fun getKeyName(keyCode: Long): String {
-        return when (keyCode) {
-            Key.DirectionLeft.keyCode -> "Left Arrow"
-            Key.DirectionRight.keyCode -> "Right Arrow"
-            Key.DirectionUp.keyCode -> "Up Arrow"
-            Key.DirectionDown.keyCode -> "Down Arrow"
-            Key.Spacebar.keyCode -> "Spacebar"
-            Key.Q.keyCode -> "Q"
-            Key.V.keyCode -> "V"
-            Key.Z.keyCode -> "Z"
-            // Add more key mappings as needed
-            else -> "Key(${keyCode})"
-        }
-    }
 }

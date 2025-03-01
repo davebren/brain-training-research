@@ -14,7 +14,6 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -27,8 +26,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import org.eski.util.getKeyName
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun KeyBindingSettingsDialog(
     keyBindingSettings: KeyBindingSettings,
@@ -56,7 +55,6 @@ private fun KeyBindingSettingsDialogContent(
 ) {
     val scrollState = rememberScrollState()
     
-    // Collect all key binding values
     val moveLeft by keyBindingSettings.moveLeft.collectAsState()
     val moveRight by keyBindingSettings.moveRight.collectAsState()
     val moveDown by keyBindingSettings.moveDown.collectAsState()
@@ -136,56 +134,56 @@ private fun KeyBindingSettingsDialogContent(
             ) {
                 KeyBindingRow(
                     label = "Move Left",
-                    keyName = keyBindingSettings.getKeyName(moveLeft),
+                    keyName = getKeyName(moveLeft),
                     isSelected = selectedBinding == "moveLeft",
                     onClick = { selectedBinding = "moveLeft" }
                 )
                 
                 KeyBindingRow(
                     label = "Move Right",
-                    keyName = keyBindingSettings.getKeyName(moveRight),
+                    keyName = getKeyName(moveRight),
                     isSelected = selectedBinding == "moveRight",
                     onClick = { selectedBinding = "moveRight" }
                 )
                 
                 KeyBindingRow(
                     label = "Move Down",
-                    keyName = keyBindingSettings.getKeyName(moveDown),
+                    keyName = getKeyName(moveDown),
                     isSelected = selectedBinding == "moveDown",
                     onClick = { selectedBinding = "moveDown" }
                 )
                 
                 KeyBindingRow(
                     label = "Rotate Clockwise",
-                    keyName = keyBindingSettings.getKeyName(rotateClockwise),
+                    keyName = getKeyName(rotateClockwise),
                     isSelected = selectedBinding == "rotateClockwise",
                     onClick = { selectedBinding = "rotateClockwise" }
                 )
                 
                 KeyBindingRow(
                     label = "Rotate Counter-Clockwise",
-                    keyName = keyBindingSettings.getKeyName(rotateCounterClockwise),
+                    keyName = getKeyName(rotateCounterClockwise),
                     isSelected = selectedBinding == "rotateCounterClockwise",
                     onClick = { selectedBinding = "rotateCounterClockwise" }
                 )
                 
                 KeyBindingRow(
                     label = "Rotate 180°",
-                    keyName = keyBindingSettings.getKeyName(rotate180),
+                    keyName = getKeyName(rotate180),
                     isSelected = selectedBinding == "rotate180",
                     onClick = { selectedBinding = "rotate180" }
                 )
                 
                 KeyBindingRow(
                     label = "Drop Piece",
-                    keyName = keyBindingSettings.getKeyName(dropPiece),
+                    keyName = getKeyName(dropPiece),
                     isSelected = selectedBinding == "dropPiece",
                     onClick = { selectedBinding = "dropPiece" }
                 )
                 
                 KeyBindingRow(
                     label = "N-Back Match",
-                    keyName = keyBindingSettings.getKeyName(nbackMatch),
+                    keyName = getKeyName(nbackMatch),
                     isSelected = selectedBinding == "nbackMatch",
                     onClick = { selectedBinding = "nbackMatch" }
                 )
@@ -199,8 +197,7 @@ private fun KeyBindingSettingsDialogContent(
                 )
                 
                 Text(
-                    text = "Press any key to bind to...",
-//                    text = "Press any key to bind to '${selectedBinding?.replace("([A-Z])".toRegex(), " $1").lowercase().replaceFirstChar { it.uppercase() }}'",
+                    text = "Press any key to bind to",
                     color = Color.Yellow,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
