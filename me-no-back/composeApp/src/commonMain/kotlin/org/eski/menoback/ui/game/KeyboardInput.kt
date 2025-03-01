@@ -4,6 +4,7 @@ import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -23,17 +24,31 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
 import kotlinx.coroutines.delay
 import org.eski.menoback.ui.game.vm.GameScreenViewModel
+import org.eski.menoback.ui.keybinding.KeyBindingSettings
 
 const val repeatDelayMillis = 250L
 const val repeatTickMillis = 50L
 
 @Composable
-fun KeyboardInput(vm: GameScreenViewModel) {
+fun KeyboardInput(
+  vm: GameScreenViewModel,
+  keyBindingSettings: KeyBindingSettings
+) {
   val focusRequester = remember { FocusRequester() }
   var hasFocus by remember { mutableStateOf(false) }
   var leftPressed by remember { mutableStateOf(false) }
   var rightPressed by remember { mutableStateOf(false) }
   var downPressed by remember { mutableStateOf(false) }
+
+  // Collect key binding settings
+  val moveLeft by keyBindingSettings.moveLeft.collectAsState()
+  val moveRight by keyBindingSettings.moveRight.collectAsState()
+  val moveDown by keyBindingSettings.moveDown.collectAsState()
+  val rotateClockwise by keyBindingSettings.rotateClockwise.collectAsState()
+  val rotateCounterClockwise by keyBindingSettings.rotateCounterClockwise.collectAsState()
+  val rotate180 by keyBindingSettings.rotate180.collectAsState()
+  val dropPiece by keyBindingSettings.dropPiece.collectAsState()
+  val nbackMatch by keyBindingSettings.nbackMatch.collectAsState()
 
   Box(modifier = Modifier
     .focusRequester(focusRequester)
@@ -44,45 +59,47 @@ fun KeyboardInput(vm: GameScreenViewModel) {
         return@onKeyEvent false
       }
 
+      val keyCode = event.key.keyCode
+
       if (event.type == KeyEventType.KeyDown) {
-        when (event.key) {
-          Key.DirectionLeft -> {
+        when (keyCode) {
+          moveLeft -> {
             if (!leftPressed) {
               vm.leftClicked()
               leftPressed = true
             }
           }
 
-          Key.DirectionRight -> {
+          moveRight -> {
             if (!rightPressed) {
               vm.rightClicked()
               rightPressed = true
             }
           }
 
-          Key.V -> vm.rotatePiece(Rotation.clockwise)
-          Key.Q -> vm.rotatePiece(Rotation.counterClockwise)
-          Key.DirectionUp -> {
+          rotateClockwise -> vm.rotatePiece(Rotation.clockwise)
+          rotateCounterClockwise -> vm.rotatePiece(Rotation.counterClockwise)
+          rotate180 -> {
             vm.rotatePiece(Rotation.clockwise)
             vm.rotatePiece(Rotation.clockwise)
           }
-          Key.DirectionDown -> {
+          moveDown -> {
             if (!downPressed) {
               vm.downClicked()
               downPressed = true
             }
           }
 
-          Key.Spacebar -> vm.dropPiece()
+          dropPiece -> vm.dropPiece()
         }
       }
 
       if (event.type == KeyEventType.KeyUp) {
-        when(event.key) {
-          Key.DirectionLeft -> leftPressed = false
-          Key.DirectionRight -> rightPressed = false
-          Key.DirectionDown -> downPressed = false
-          Key.Z -> vm.nbackMatchChoice()
+        when(keyCode) {
+          moveLeft -> leftPressed = false
+          moveRight -> rightPressed = false
+          moveDown -> downPressed = false
+          nbackMatch -> vm.nbackMatchChoice()
         }
       }
 

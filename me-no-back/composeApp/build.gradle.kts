@@ -71,6 +71,8 @@ kotlin {
             implementation(libs.lifecycle.viewmodel.compose)
             implementation(libs.kotlinx.coroutines)
             implementation(libs.kotlinx.dateTime)
+            implementation(libs.multiplatform.settings)
+            implementation(libs.multiplatform.settings.no.arg)
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
