@@ -1,4 +1,4 @@
-package org.eski.menoback.ui.game
+package org.eski.menoback.ui.game.views
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -16,7 +16,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import org.eski.menoback.model.Board
+import org.eski.menoback.ui.game.model.Board
 import org.eski.menoback.ui.TetriminoColors
 import org.eski.menoback.ui.game.vm.GameScreenViewModel
 

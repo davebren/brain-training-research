@@ -1,4 +1,4 @@
-package org.eski.menoback.ui.game
+package org.eski.menoback.ui.keybinding
 
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
@@ -22,8 +22,8 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
 import kotlinx.coroutines.delay
+import org.eski.menoback.ui.game.model.Rotation
 import org.eski.menoback.ui.game.vm.GameScreenViewModel
-import org.eski.menoback.ui.keybinding.KeyBindingSettings
 
 const val repeatDelayMillis = 250L
 const val repeatTickMillis = 50L

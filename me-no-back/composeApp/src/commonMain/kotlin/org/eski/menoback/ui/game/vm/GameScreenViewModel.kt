@@ -16,14 +16,14 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
-import org.eski.menoback.model.Board
-import org.eski.menoback.model.Tetrimino
-import org.eski.menoback.model.boardHeight
-import org.eski.menoback.model.boardWidth
-import org.eski.menoback.model.newTetriminoStartPosition
+import org.eski.menoback.ui.game.model.Board
+import org.eski.menoback.ui.game.model.Tetrimino
+import org.eski.menoback.ui.game.model.boardHeight
+import org.eski.menoback.ui.game.model.boardWidth
+import org.eski.menoback.ui.game.model.newTetriminoStartPosition
 import org.eski.menoback.ui.TetriminoColors
-import org.eski.menoback.ui.game.Rotation
-import org.eski.menoback.ui.settings.GameSettings
+import org.eski.menoback.ui.game.model.Rotation
+import org.eski.menoback.ui.game.data.GameSettings
 import org.eski.util.deepCopy
 import kotlin.random.Random
 

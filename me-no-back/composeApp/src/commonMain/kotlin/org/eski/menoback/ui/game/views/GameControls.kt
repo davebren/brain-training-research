@@ -1,4 +1,4 @@
-package org.eski.menoback.ui.game
+package org.eski.menoback.ui.game.views
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.eski.menoback.ui.game.model.Rotation
 import org.eski.menoback.ui.game.vm.GameScreenViewModel
 
 

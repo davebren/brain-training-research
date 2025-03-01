@@ -1,7 +1,7 @@
 package org.eski.menoback.ui
 
 import androidx.compose.ui.graphics.Color
-import org.eski.menoback.model.Tetrimino
+import org.eski.menoback.ui.game.model.Tetrimino
 
 data class TetriminoColors(
   val one: Color = Color(0xff90d8f9),

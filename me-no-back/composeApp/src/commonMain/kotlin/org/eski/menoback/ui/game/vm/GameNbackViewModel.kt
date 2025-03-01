@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import org.eski.menoback.model.Tetrimino
+import org.eski.menoback.ui.game.model.Tetrimino
 
 class GameNbackViewModel(
   scope: CoroutineScope,

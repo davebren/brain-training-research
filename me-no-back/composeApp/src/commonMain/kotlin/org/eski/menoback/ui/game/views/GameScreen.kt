@@ -1,4 +1,4 @@
-package org.eski.menoback.ui.game
+package org.eski.menoback.ui.game.views
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -16,7 +16,8 @@ import org.eski.menoback.data.keyBindingSettings
 import org.eski.menoback.ui.game.vm.GameScreenViewModel
 import org.eski.menoback.ui.keybinding.KeyBindingSettings
 import org.eski.menoback.ui.keybinding.KeyBindingSettingsDialog
-import org.eski.menoback.ui.settings.GameSettings
+import org.eski.menoback.ui.game.data.GameSettings
+import org.eski.menoback.ui.keybinding.KeyboardInput
 import org.eski.menoback.ui.utils.grid2
 
 @Composable

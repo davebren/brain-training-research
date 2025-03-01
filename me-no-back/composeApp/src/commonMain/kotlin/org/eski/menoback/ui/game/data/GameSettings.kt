@@ -1,4 +1,4 @@
-package org.eski.menoback.ui.settings
+package org.eski.menoback.ui.game.data
 
 import com.russhwolf.settings.Settings
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -10,7 +10,7 @@ class GameSettings(val settings: Settings) {
     private const val gameDurationKey = "$settingsKey.duration"
 
     // Available game durations in seconds
-    val AVAILABLE_DURATIONS = listOf(30, 60, 120, 300, 600)
+    val AVAILABLE_DURATIONS = listOf(30, 60, 120, 300, 600, 1800)
 
     // Default game duration (60 seconds)
     private const val defaultGameDuration = 60

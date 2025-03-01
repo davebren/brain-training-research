@@ -1,4 +1,4 @@
-package org.eski.menoback.ui.game
+package org.eski.menoback.ui.game.views
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.eski.menoback.ui.game.vm.GameScreenViewModel
 import org.eski.menoback.ui.game.vm.GameState
-import org.eski.menoback.ui.settings.GameSettings
+import org.eski.menoback.ui.game.data.GameSettings
 
 @Composable
 fun GameHeader(

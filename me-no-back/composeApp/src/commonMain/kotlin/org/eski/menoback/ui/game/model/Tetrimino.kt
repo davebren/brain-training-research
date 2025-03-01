@@ -1,6 +1,4 @@
-package org.eski.menoback.model
-
-import org.eski.menoback.ui.game.Rotation
+package org.eski.menoback.ui.game.model
 
 data class Tetrimino(val type: Int, val shape: Array<IntArray>) {
 

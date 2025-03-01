@@ -1,4 +1,4 @@
-package org.eski.menoback.model
+package org.eski.menoback.ui.game.model
 
 import org.eski.util.deepCopy
 
@@ -50,7 +50,8 @@ data class Board(
 
           // Check bounds
           if (boardRow < 0 || boardRow >= boardHeight ||
-            boardCol < 0 || boardCol >= boardWidth) {
+            boardCol < 0 || boardCol >= boardWidth
+          ) {
             return false
           }
 
