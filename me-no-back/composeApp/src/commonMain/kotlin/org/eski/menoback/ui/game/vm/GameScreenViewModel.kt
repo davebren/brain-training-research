@@ -1,8 +1,5 @@
 package org.eski.menoback.ui.game.vm
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -26,15 +23,16 @@ import org.eski.menoback.model.boardWidth
 import org.eski.menoback.model.newTetriminoStartPosition
 import org.eski.menoback.ui.TetriminoColors
 import org.eski.menoback.ui.game.Rotation
+import org.eski.menoback.ui.settings.GameSettings
 import org.eski.util.deepCopy
 import kotlin.random.Random
 
-
 const val nbackMatchBias = 0.15f
-const val gameDurationSeconds = 60
 const val initialGameTickRate = 1000L
 
-class GameScreenViewModel : ViewModel() {
+class GameScreenViewModel(
+  private val gameSettings: GameSettings
+) : ViewModel() {
   val tetriminoColors = MutableStateFlow(TetriminoColors())
 
   private val _gameState = MutableStateFlow<GameState>(GameState.NotStarted)
@@ -47,7 +45,7 @@ class GameScreenViewModel : ViewModel() {
 
   val board = MutableStateFlow(Board())
   val displayBoard: StateFlow<Board> = combine(board, currentTetrimino, currentPiecePosition) {
-    board: Board, tetrimino: Tetrimino?, position: Tetrimino.Position? ->
+      board: Board, tetrimino: Tetrimino?, position: Tetrimino.Position? ->
     if (tetrimino == null || position == null) board
     else board.with(tetrimino, position)
   }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), Board())
@@ -59,11 +57,24 @@ class GameScreenViewModel : ViewModel() {
   private var gameJob: Job? = null
   private val gameScope = CoroutineScope(Dispatchers.Default)
 
-  val timeRemaining = MutableStateFlow(gameDurationSeconds)
-  val timerColor = timeRemaining.map { if (it < 10) Color.Red else Color.LightGray }
-    .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), Color.LightGray)
+  val timeRemaining = MutableStateFlow(gameSettings.gameDuration.value)
+  val timerColor = timeRemaining.map {
+    val warningThreshold = gameSettings.gameDuration.value / 6
+    if (it < warningThreshold) Color.Red else Color.LightGray
+  }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), Color.LightGray)
 
   private var timerJob: Job? = null
+
+  // Initialize the time remaining when game settings change
+  init {
+    viewModelScope.launch {
+      gameSettings.gameDuration.collect { duration ->
+        if (_gameState.value == GameState.NotStarted) {
+          timeRemaining.value = duration
+        }
+      }
+    }
+  }
 
   fun toggleGameState() {
     when (gameState.value) {
@@ -110,7 +121,7 @@ class GameScreenViewModel : ViewModel() {
     nback.streak.value = 0
     score.value = 0
     gameSpeed.value = initialGameTickRate
-    timeRemaining.value = gameDurationSeconds
+    timeRemaining.value = gameSettings.gameDuration.value
     _gameState.value = GameState.NotStarted
   }
 

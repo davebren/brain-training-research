@@ -16,12 +16,14 @@ import org.eski.menoback.data.keyBindingSettings
 import org.eski.menoback.ui.game.vm.GameScreenViewModel
 import org.eski.menoback.ui.keybinding.KeyBindingSettings
 import org.eski.menoback.ui.keybinding.KeyBindingSettingsDialog
+import org.eski.menoback.ui.settings.GameSettings
 import org.eski.menoback.ui.utils.grid2
 
 @Composable
 fun GameScreen(
-    vm: GameScreenViewModel = viewModel(),
     keyBindings: KeyBindingSettings = keyBindingSettings,
+    gameSettings: GameSettings = org.eski.menoback.data.gameSettings,
+    vm: GameScreenViewModel = viewModel { GameScreenViewModel(gameSettings) }
 ) {
     val gameState by vm.gameState.collectAsState()
     var showKeyBindingDialog by remember { mutableStateOf(false) }
@@ -38,7 +40,7 @@ fun GameScreen(
                 .padding(grid2),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            GameHeader(vm)
+            GameHeader(vm, gameSettings)
             Spacer(modifier = Modifier.height(grid2))
 
             Row(
