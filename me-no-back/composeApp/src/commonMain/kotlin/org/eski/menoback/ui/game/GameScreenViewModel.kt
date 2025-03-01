@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.eski.menoback.model.Board
@@ -47,12 +48,17 @@ class GameScreenViewModel : ViewModel() {
     else board.with(tetrimino, position)
   }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), Board())
 
+  // TODO: Move into separate class.
   private var nBackDecisionMade = false
   val nbackLevel = MutableStateFlow(1)
   val nbackStreak = MutableStateFlow(0)
   val nbackMultiplier = combine(nbackLevel, nbackStreak) { level, streak ->
     1.0f + (streak * (level * 2) * 0.1f)
   }.stateIn(viewModelScope, SharingStarted.Eagerly, 1f)
+  val nbackMultiplierText = nbackMultiplier.map {
+    if (!it.toString().contains('.')) "${it}x"
+    else "${it.toString().subSequence(0, it.toString().indexOf('.') + 2)}x"
+  }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), "1.0x")
 
   // Score
   private var _score by mutableStateOf(0)
@@ -215,6 +221,7 @@ class GameScreenViewModel : ViewModel() {
 
   fun nBackMatch() {
     if (_gameState.value != GameState.Running || nBackDecisionMade) return
+    nBackDecisionMade = true
 
     val correct = if (tetriminoHistory.size > nbackLevel.value) {
       val nBackPiece = tetriminoHistory[tetriminoHistory.size - nbackLevel.value - 1]
