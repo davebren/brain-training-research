@@ -13,7 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.isAltPressed
 import androidx.compose.ui.input.key.isCtrlPressed
@@ -40,7 +39,6 @@ fun KeyboardInput(
   var rightPressed by remember { mutableStateOf(false) }
   var downPressed by remember { mutableStateOf(false) }
 
-  // Collect key binding settings
   val moveLeft by keyBindingSettings.moveLeft.collectAsState()
   val moveRight by keyBindingSettings.moveRight.collectAsState()
   val moveDown by keyBindingSettings.moveDown.collectAsState()
@@ -49,6 +47,7 @@ fun KeyboardInput(
   val rotate180 by keyBindingSettings.rotate180.collectAsState()
   val dropPiece by keyBindingSettings.dropPiece.collectAsState()
   val nbackMatch by keyBindingSettings.nbackMatch.collectAsState()
+  val togglePlayPause by keyBindingSettings.togglePlayPause.collectAsState()
 
   Box(modifier = Modifier
     .focusRequester(focusRequester)
@@ -63,17 +62,24 @@ fun KeyboardInput(
 
       if (event.type == KeyEventType.KeyDown) {
         when (keyCode) {
+          togglePlayPause -> vm.toggleGameState()
+
           moveLeft -> {
             if (!leftPressed) {
               vm.leftClicked()
               leftPressed = true
             }
           }
-
           moveRight -> {
             if (!rightPressed) {
               vm.rightClicked()
               rightPressed = true
+            }
+          }
+          moveDown -> {
+            if (!downPressed) {
+              vm.downClicked()
+              downPressed = true
             }
           }
 
@@ -82,12 +88,6 @@ fun KeyboardInput(
           rotate180 -> {
             vm.rotatePiece(Rotation.clockwise)
             vm.rotatePiece(Rotation.clockwise)
-          }
-          moveDown -> {
-            if (!downPressed) {
-              vm.downClicked()
-              downPressed = true
-            }
           }
 
           dropPiece -> vm.dropPiece()

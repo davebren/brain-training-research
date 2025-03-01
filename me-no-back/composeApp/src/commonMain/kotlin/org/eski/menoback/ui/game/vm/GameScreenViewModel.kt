@@ -65,6 +65,15 @@ class GameScreenViewModel : ViewModel() {
 
   private var timerJob: Job? = null
 
+  fun toggleGameState() {
+    when (gameState.value) {
+      GameState.NotStarted -> startGame()
+      GameState.Running -> pauseGame()
+      GameState.Paused -> resumeGame()
+      GameState.GameOver -> startGame()
+    }
+  }
+
   fun startGame() {
     if (_gameState.value != GameState.Running) {
       resetGame()

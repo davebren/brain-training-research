@@ -54,7 +54,7 @@ private fun KeyBindingSettingsDialogContent(
     onDismiss: () -> Unit
 ) {
     val scrollState = rememberScrollState()
-    
+
     val moveLeft by keyBindingSettings.moveLeft.collectAsState()
     val moveRight by keyBindingSettings.moveRight.collectAsState()
     val moveDown by keyBindingSettings.moveDown.collectAsState()
@@ -63,10 +63,11 @@ private fun KeyBindingSettingsDialogContent(
     val rotate180 by keyBindingSettings.rotate180.collectAsState()
     val dropPiece by keyBindingSettings.dropPiece.collectAsState()
     val nbackMatch by keyBindingSettings.nbackMatch.collectAsState()
-    
+    val togglePlayPause by keyBindingSettings.togglePlayPause.collectAsState()
+
     var selectedBinding by remember { mutableStateOf<String?>(null) }
     val focusRequester = remember { FocusRequester() }
-    
+
     Card(
         modifier = Modifier
             .fillMaxWidth(0.8f)
@@ -80,7 +81,6 @@ private fun KeyBindingSettingsDialogContent(
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            // Header
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -92,7 +92,7 @@ private fun KeyBindingSettingsDialogContent(
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.weight(1f)
                 )
-                
+
                 IconButton(onClick = { keyBindingSettings.resetToDefaults() }) {
                     Icon(
                         imageVector = Icons.Default.Refresh,
@@ -100,7 +100,7 @@ private fun KeyBindingSettingsDialogContent(
                         tint = Color.White
                     )
                 }
-                
+
                 IconButton(onClick = onDismiss) {
                     Icon(
                         imageVector = Icons.Default.Close,
@@ -109,13 +109,13 @@ private fun KeyBindingSettingsDialogContent(
                     )
                 }
             }
-            
+
             Divider(
                 color = Color.Gray.copy(alpha = 0.5f),
                 thickness = 1.dp,
                 modifier = Modifier.padding(vertical = 8.dp)
             )
-            
+
             Text(
                 text = "Click on a control to rebind it",
                 color = Color.White.copy(alpha = 0.7f),
@@ -123,64 +123,79 @@ private fun KeyBindingSettingsDialogContent(
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center
             )
-            
+
             Spacer(modifier = Modifier.height(16.dp))
-            
+
             // Key binding list
             Column(
                 modifier = Modifier
                     .weight(1f)
                     .verticalScroll(scrollState)
             ) {
+                SectionHeader(text = "Game Controls")
+
+                KeyBindingRow(
+                    label = "Start/Pause Game",
+                    keyName = getKeyName(togglePlayPause),
+                    isSelected = selectedBinding == "togglePlayPause",
+                    onClick = { selectedBinding = "togglePlayPause" }
+                )
+
+                SectionHeader(text = "Movement")
+
                 KeyBindingRow(
                     label = "Move Left",
                     keyName = getKeyName(moveLeft),
                     isSelected = selectedBinding == "moveLeft",
                     onClick = { selectedBinding = "moveLeft" }
                 )
-                
+
                 KeyBindingRow(
                     label = "Move Right",
                     keyName = getKeyName(moveRight),
                     isSelected = selectedBinding == "moveRight",
                     onClick = { selectedBinding = "moveRight" }
                 )
-                
+
                 KeyBindingRow(
                     label = "Move Down",
                     keyName = getKeyName(moveDown),
                     isSelected = selectedBinding == "moveDown",
                     onClick = { selectedBinding = "moveDown" }
                 )
-                
-                KeyBindingRow(
-                    label = "Rotate Clockwise",
-                    keyName = getKeyName(rotateClockwise),
-                    isSelected = selectedBinding == "rotateClockwise",
-                    onClick = { selectedBinding = "rotateClockwise" }
-                )
-                
-                KeyBindingRow(
-                    label = "Rotate Counter-Clockwise",
-                    keyName = getKeyName(rotateCounterClockwise),
-                    isSelected = selectedBinding == "rotateCounterClockwise",
-                    onClick = { selectedBinding = "rotateCounterClockwise" }
-                )
-                
-                KeyBindingRow(
-                    label = "Rotate 180°",
-                    keyName = getKeyName(rotate180),
-                    isSelected = selectedBinding == "rotate180",
-                    onClick = { selectedBinding = "rotate180" }
-                )
-                
+
                 KeyBindingRow(
                     label = "Drop Piece",
                     keyName = getKeyName(dropPiece),
                     isSelected = selectedBinding == "dropPiece",
                     onClick = { selectedBinding = "dropPiece" }
                 )
-                
+
+                SectionHeader(text = "Rotation")
+
+                KeyBindingRow(
+                    label = "Rotate Clockwise",
+                    keyName = getKeyName(rotateClockwise),
+                    isSelected = selectedBinding == "rotateClockwise",
+                    onClick = { selectedBinding = "rotateClockwise" }
+                )
+
+                KeyBindingRow(
+                    label = "Rotate Counter-Clockwise",
+                    keyName = getKeyName(rotateCounterClockwise),
+                    isSelected = selectedBinding == "rotateCounterClockwise",
+                    onClick = { selectedBinding = "rotateCounterClockwise" }
+                )
+
+                KeyBindingRow(
+                    label = "Rotate 180°",
+                    keyName = getKeyName(rotate180),
+                    isSelected = selectedBinding == "rotate180",
+                    onClick = { selectedBinding = "rotate180" }
+                )
+
+                SectionHeader(text = "N-Back")
+
                 KeyBindingRow(
                     label = "N-Back Match",
                     keyName = getKeyName(nbackMatch),
@@ -188,14 +203,14 @@ private fun KeyBindingSettingsDialogContent(
                     onClick = { selectedBinding = "nbackMatch" }
                 )
             }
-            
+
             if (selectedBinding != null) {
                 Divider(
                     color = Color.Gray.copy(alpha = 0.5f),
                     thickness = 1.dp,
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
-                
+
                 Text(
                     text = "Press any key to bind to",
                     color = Color.Yellow,
@@ -208,7 +223,7 @@ private fun KeyBindingSettingsDialogContent(
                 )
             }
         }
-        
+
         // Invisible box to capture key events when rebinding
         if (selectedBinding != null) {
             Box(
@@ -216,7 +231,7 @@ private fun KeyBindingSettingsDialogContent(
                     .fillMaxSize()
                     .focusRequester(focusRequester)
                     .focusable()
-                    .onFocusChanged { 
+                    .onFocusChanged {
                         if (!it.isFocused && selectedBinding != null) {
                             focusRequester.requestFocus()
                         }
@@ -224,8 +239,7 @@ private fun KeyBindingSettingsDialogContent(
                     .onKeyEvent { event ->
                         if (event.type == KeyEventType.KeyDown) {
                             val keyCode = event.key.keyCode
-                            
-                            // Update the selected key binding
+
                             when (selectedBinding) {
                                 "moveLeft" -> keyBindingSettings.setMoveLeft(keyCode)
                                 "moveRight" -> keyBindingSettings.setMoveRight(keyCode)
@@ -235,9 +249,9 @@ private fun KeyBindingSettingsDialogContent(
                                 "rotate180" -> keyBindingSettings.setRotate180(keyCode)
                                 "dropPiece" -> keyBindingSettings.setDropPiece(keyCode)
                                 "nbackMatch" -> keyBindingSettings.setNbackMatch(keyCode)
+                                "togglePlayPause" -> keyBindingSettings.setTogglePlayPause(keyCode)
                             }
-                            
-                            // Clear the selection
+
                             selectedBinding = null
                             true
                         } else {
@@ -245,12 +259,31 @@ private fun KeyBindingSettingsDialogContent(
                         }
                     }
             )
-            
+
             LaunchedEffect(selectedBinding) {
                 focusRequester.requestFocus()
             }
         }
     }
+}
+
+@Composable
+fun SectionHeader(text: String) {
+    Text(
+        text = text,
+        color = Color.LightGray,
+        fontSize = 14.sp,
+        fontWeight = FontWeight.Bold,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 16.dp, bottom = 8.dp)
+    )
+
+    Divider(
+        color = Color.Gray.copy(alpha = 0.3f),
+        thickness = 1.dp,
+        modifier = Modifier.padding(bottom = 8.dp)
+    )
 }
 
 @Composable
@@ -273,7 +306,7 @@ fun KeyBindingRow(
             fontSize = 15.sp,
             modifier = Modifier.weight(1f)
         )
-        
+
         Box(
             modifier = Modifier
                 .width(160.dp)
