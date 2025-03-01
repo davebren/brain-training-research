@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import org.eski.menoback.model.Board
+import org.eski.menoback.ui.TetriminoColors
 
 
 @Composable
@@ -24,6 +25,7 @@ fun GameBoard(
   vm: GameScreenViewModel,
   modifier: Modifier = Modifier
 ) {
+  val tetriminoColors: TetriminoColors by vm.tetriminoColors.collectAsState()
   val displayBoard: Board by vm.displayBoard.collectAsState()
 
   Box(
@@ -49,19 +51,7 @@ fun GameBoard(
                 .weight(1f)
                 .aspectRatio(1f)
                 .padding(1.dp)
-                .background(
-                  when (cell) {
-                    0 -> Color.LightGray.copy(alpha = 0.2f)
-                    1 -> Color.Cyan
-                    2 -> Color.Yellow
-                    3 -> Color.Magenta
-                    4 -> Color.Blue
-                    5 -> Color.Red
-                    6 -> Color.Green
-                    7 -> Color.Red
-                    else -> Color.Gray
-                  }
-                )
+                .background(tetriminoColors.fromInt(cell) ?: Color.Gray)
             )
           }
         }

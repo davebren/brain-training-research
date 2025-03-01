@@ -27,6 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.eski.menoback.model.Tetrimino
+import org.eski.menoback.ui.TetriminoColors
 import org.eski.menoback.ui.utils.grid
 import org.eski.menoback.ui.utils.grid2
 
@@ -62,6 +63,7 @@ fun NextPiecePreview(
   vm: GameScreenViewModel,
   modifier: Modifier = Modifier
 ) {
+  val tetriminoColors: TetriminoColors by vm.tetriminoColors.collectAsState()
   val nextTetrimino: Tetrimino? by vm.nextTetrimino.collectAsState()
 
   Column(
@@ -99,22 +101,7 @@ fun NextPiecePreview(
                 modifier = Modifier
                   .size(20.dp)
                   .padding(1.dp)
-                  .background(
-                    if (tetrimino.shape[row][col] != 0) {
-                      when (tetrimino.type) {
-                        1 -> Color.Cyan
-                        2 -> Color.Yellow
-                        3 -> Color.Magenta
-                        4 -> Color.Blue
-                        5 -> Color.Red
-                        6 -> Color.Green
-                        7 -> Color.Red
-                        else -> Color.Gray
-                      }
-                    } else {
-                      Color.Transparent
-                    }
-                  )
+                  .background(tetriminoColors.fromInt(tetrimino.shape[row][col]) ?: Color.Transparent)
               )
             }
           }

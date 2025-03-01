@@ -21,6 +21,7 @@ import org.eski.menoback.model.Tetrimino
 import org.eski.menoback.model.boardHeight
 import org.eski.menoback.model.boardWidth
 import org.eski.menoback.model.newTetriminoStartPosition
+import org.eski.menoback.ui.TetriminoColors
 import org.eski.util.deepCopy
 import kotlin.random.Random
 
@@ -29,6 +30,8 @@ const val nbackMatchBias = 0.15f
 const val GAME_DURATION_SECONDS = 60
 
 class GameScreenViewModel : ViewModel() {
+
+  val tetriminoColors = MutableStateFlow(TetriminoColors())
 
   // Game state
   private val _gameState = MutableStateFlow<GameState>(GameState.NotStarted)
