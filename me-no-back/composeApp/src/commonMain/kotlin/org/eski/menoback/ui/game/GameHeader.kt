@@ -22,6 +22,8 @@ fun GameHeader(
   vm: GameScreenViewModel
 ) {
   val nbackLevel by vm.nbackLevel.collectAsState()
+  val nbackStreak by vm.nbackStreak.collectAsState()
+  val nbackMultiplier by vm.nbackMultiplier.collectAsState()
 
   Column(
     horizontalAlignment = Alignment.CenterHorizontally
@@ -40,8 +42,8 @@ fun GameHeader(
       horizontalArrangement = Arrangement.SpaceEvenly
     ) {
       InfoItem(label = "Score", value = vm.score.toString())
-      InfoItem(label = "Multiplier", value = "${vm.multiplier}x")
-      InfoItem(label = "$nbackLevel-Back", value = "Streak: ${vm.nBackStreak}")
+      InfoItem(label = "Multiplier", value = "${nbackMultiplier}x")
+      InfoItem(label = "$nbackLevel-Back", value = "Streak: $nbackStreak")
 
       GameTimer(timeRemaining = vm.timeRemaining)
     }
