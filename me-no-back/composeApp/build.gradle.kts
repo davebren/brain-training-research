@@ -69,7 +69,8 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.runtime.compose)
             implementation(libs.lifecycle.viewmodel.compose)
-            implementation(libs.kotlinx.coroutines)//
+            implementation(libs.kotlinx.coroutines)
+            implementation(libs.kotlinx.dateTime)
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)

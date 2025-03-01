@@ -3,6 +3,7 @@ package org.eski.menoback.ui.game.vm
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineScope
@@ -14,8 +15,10 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 import org.eski.menoback.model.Board
 import org.eski.menoback.model.Tetrimino
 import org.eski.menoback.model.boardHeight
@@ -56,8 +59,9 @@ class GameScreenViewModel : ViewModel() {
   private var gameJob: Job? = null
   private val gameScope = CoroutineScope(Dispatchers.Default)
 
-  private var _timeRemaining by mutableStateOf(gameDurationSeconds)
-  val timeRemaining: Int get() = _timeRemaining
+  val timeRemaining = MutableStateFlow(gameDurationSeconds)
+  val timerColor = timeRemaining.map { if (it < 10) Color.Red else Color.LightGray }
+    .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), Color.LightGray)
 
   private var timerJob: Job? = null
 
@@ -97,7 +101,7 @@ class GameScreenViewModel : ViewModel() {
     nback.streak.value = 0
     score.value = 0
     gameSpeed.value = initialGameTickRate
-    _timeRemaining = gameDurationSeconds
+    timeRemaining.value = gameDurationSeconds
     _gameState.value = GameState.NotStarted
   }
 
@@ -276,14 +280,14 @@ class GameScreenViewModel : ViewModel() {
   private fun startTimer() {
     timerJob?.cancel()
     timerJob = gameScope.launch {
-      while (_timeRemaining > 0 && _gameState.value == GameState.Running) {
-        val drift = timeRemaining % 1000L
+      val startTime = Clock.System.now().toEpochMilliseconds()
+      while (timeRemaining.value > 0 && _gameState.value == GameState.Running) {
+        val drift = (Clock.System.now().toEpochMilliseconds() - startTime) % 1000L
         delay(1000L - drift)
-        _timeRemaining--
+        timeRemaining.value--
       }
 
-      // End the game when timer reaches zero
-      if (_timeRemaining <= 0 && _gameState.value == GameState.Running) {
+      if (timeRemaining.value <= 0 && _gameState.value == GameState.Running) {
         _gameState.value = GameState.GameOver
         gameJob?.cancel()
       }
@@ -297,7 +301,6 @@ class GameScreenViewModel : ViewModel() {
   }
 }
 
-// Game state enum
 enum class GameState {
   NotStarted,
   Running,

@@ -26,6 +26,8 @@ fun GameHeader(
   val nbackStreak by vm.nback.streak.collectAsState()
   val nbackMultiplierText by vm.nback.multiplierText.collectAsState()
   val score by vm.score.collectAsState()
+  val timeLeft by vm.timeRemaining.collectAsState()
+  val timerColor by vm.timerColor.collectAsState()
 
   Column(
     horizontalAlignment = Alignment.CenterHorizontally
@@ -46,14 +48,13 @@ fun GameHeader(
       InfoItem(label = "Score", value = score.toString())
       InfoItem(label = "Multiplier", value = nbackMultiplierText)
       InfoItem(label = "$nbackLevel-Back", value = "Streak: $nbackStreak")
-
-      GameTimer(timeRemaining = vm.timeRemaining)
+      InfoItem(label = "Time", value = timeLeft.toString(), timerColor)
     }
   }
 }
 
 @Composable
-private fun InfoItem(label: String, value: String) {
+private fun InfoItem(label: String, value: String, valueTextColor: Color = Color.LightGray) {
   Column(
     horizontalAlignment = Alignment.CenterHorizontally
   ) {
@@ -66,7 +67,7 @@ private fun InfoItem(label: String, value: String) {
       text = value,
       fontSize = 16.sp,
       fontWeight = FontWeight.Bold,
-      color = Color.LightGray,
+      color = valueTextColor,
     )
   }
 }
