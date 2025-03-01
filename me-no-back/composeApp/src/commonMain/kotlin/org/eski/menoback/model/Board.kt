@@ -38,4 +38,30 @@ data class Board(
     }
     return Board(newMatrix)
   }
+
+  fun validPosition(tetrimino: Tetrimino?, position: Tetrimino.Position): Boolean {
+    if (tetrimino == null) return false
+
+    for (row in tetrimino.shape.indices) {
+      for (col in tetrimino.shape[row].indices) {
+        if (tetrimino.shape[row][col] != 0) {
+          val boardRow = position.row + row
+          val boardCol = position.col + col
+
+          // Check bounds
+          if (boardRow < 0 || boardRow >= boardHeight ||
+            boardCol < 0 || boardCol >= boardWidth) {
+            return false
+          }
+
+          // Check collision with existing blocks
+          if (matrix[boardRow][boardCol] != 0) {
+            return false
+          }
+        }
+      }
+    }
+
+    return true
+  }
 }

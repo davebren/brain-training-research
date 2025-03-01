@@ -131,7 +131,7 @@ class GameScreenViewModel : ViewModel() {
     val position = currentPiecePosition.value ?: return
 
     val newPosition = position.copy(col = position.col - 1)
-    if (isValidPosition(currentTetrimino.value, newPosition)) {
+    if (board.value.validPosition(currentTetrimino.value, newPosition)) {
       currentPiecePosition.value = newPosition
     }
   }
@@ -141,7 +141,7 @@ class GameScreenViewModel : ViewModel() {
     val position = currentPiecePosition.value ?: return
 
     val newPosition = position.copy(col = position.col + 1)
-    if (isValidPosition(currentTetrimino.value, newPosition)) {
+    if (board.value.validPosition(currentTetrimino.value, newPosition)) {
       currentPiecePosition.value = newPosition
     }
   }
@@ -152,13 +152,13 @@ class GameScreenViewModel : ViewModel() {
     val position = currentPiecePosition.value ?: return
 
     val rotatedPiece = tetrimino.rotate(direction)
-    if (isValidPosition(rotatedPiece, position)) {
+    if (board.value.validPosition(rotatedPiece, position)) {
       currentTetrimino.value = rotatedPiece
     } else {
       // Try wall kick (adjust position if rotation would cause collision)
       for (offset in listOf(-1, 1, -2, 2)) {
         val newPosition = position.copy(col = position.col + offset)
-        if (isValidPosition(rotatedPiece, newPosition)) {
+        if (board.value.validPosition(rotatedPiece, newPosition)) {
           currentTetrimino.value = rotatedPiece
           currentPiecePosition.value = newPosition
           break
@@ -183,45 +183,14 @@ class GameScreenViewModel : ViewModel() {
     val position = currentPiecePosition.value ?: return false
 
     val newPosition = position.copy(row = position.row + 1)
-    val valid = isValidPosition(currentTetrimino.value, newPosition)
+    val valid = board.value.validPosition(currentTetrimino.value, newPosition)
     if (valid) currentPiecePosition.value = newPosition
 
     return valid
   }
 
   fun nbackMatchChoice() = nback.matchChoice(tetriminoHistory)
-
   fun nbackNoMatchChoice() = nback.noMatchChoice(tetriminoHistory)
-
-  // TODO: Move to Board.kt.
-  private fun isValidPosition(
-    tetrimino: Tetrimino?,
-    position: Tetrimino.Position
-  ): Boolean {
-    if (tetrimino == null) return false
-
-    for (row in tetrimino.shape.indices) {
-      for (col in tetrimino.shape[row].indices) {
-        if (tetrimino.shape[row][col] != 0) {
-          val boardRow = position.row + row
-          val boardCol = position.col + col
-
-          // Check bounds
-          if (boardRow < 0 || boardRow >= boardHeight ||
-            boardCol < 0 || boardCol >= boardWidth) {
-            return false
-          }
-
-          // Check collision with existing blocks
-          if (board.value.matrix[boardRow][boardCol] != 0) {
-            return false
-          }
-        }
-      }
-    }
-
-    return true
-  }
 
   private fun lockTetrimino() {
     val tetrimino = currentTetrimino.value ?: return
@@ -299,12 +268,10 @@ class GameScreenViewModel : ViewModel() {
     tetriminoHistory.add(spawnedPiece)
     nback.clearMatchChoice()
 
-    return isValidPosition(currentTetrimino.value, newTetriminoStartPosition)
+    return board.value.validPosition(currentTetrimino.value, newTetriminoStartPosition)
   }
 
-  private fun generateRandomPiece(): Tetrimino {
-    return Tetrimino.types[Random.nextInt(Tetrimino.types.size)]
-  }
+  private fun generateRandomPiece() = Tetrimino.types[Random.nextInt(Tetrimino.types.size)]
 
   private fun startTimer() {
     timerJob?.cancel()
