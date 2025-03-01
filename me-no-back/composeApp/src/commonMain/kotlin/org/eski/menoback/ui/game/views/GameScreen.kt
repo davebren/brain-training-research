@@ -13,10 +13,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.eski.menoback.data.keyBindingSettings
+import org.eski.menoback.data.gameStatsData
 import org.eski.menoback.ui.game.vm.GameScreenViewModel
 import org.eski.menoback.ui.keybinding.KeyBindingSettings
 import org.eski.menoback.ui.keybinding.KeyBindingSettingsDialog
 import org.eski.menoback.ui.game.data.GameSettings
+import org.eski.menoback.ui.game.data.GameStatsData
 import org.eski.menoback.ui.keybinding.KeyboardInput
 import org.eski.menoback.ui.utils.grid2
 
@@ -24,7 +26,10 @@ import org.eski.menoback.ui.utils.grid2
 fun GameScreen(
     keyBindings: KeyBindingSettings = keyBindingSettings,
     gameSettings: GameSettings = org.eski.menoback.data.gameSettings,
-    vm: GameScreenViewModel = viewModel { GameScreenViewModel(gameSettings) }
+    gameStats: GameStatsData = gameStatsData,
+    vm: GameScreenViewModel = viewModel {
+        GameScreenViewModel(gameSettings, gameStats)
+    }
 ) {
     val gameState by vm.gameState.collectAsState()
     var showKeyBindingDialog by remember { mutableStateOf(false) }
@@ -82,4 +87,3 @@ fun GameScreen(
         )
     }
 }
-

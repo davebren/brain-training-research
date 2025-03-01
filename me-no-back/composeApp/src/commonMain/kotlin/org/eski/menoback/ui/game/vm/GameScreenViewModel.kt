@@ -24,6 +24,8 @@ import org.eski.menoback.ui.game.model.newTetriminoStartPosition
 import org.eski.menoback.ui.TetriminoColors
 import org.eski.menoback.ui.game.model.Rotation
 import org.eski.menoback.ui.game.data.GameSettings
+import org.eski.menoback.ui.game.data.GameStatsData
+import org.eski.menoback.data.gameStatsData as defaultGameStatsData
 import org.eski.util.deepCopy
 import kotlin.random.Random
 
@@ -31,7 +33,8 @@ const val nbackMatchBias = 0.15f
 const val initialGameTickRate = 1000L
 
 class GameScreenViewModel(
-  private val gameSettings: GameSettings
+  private val gameSettings: GameSettings,
+  private val gameStatsData: GameStatsData = defaultGameStatsData
 ) : ViewModel() {
   val tetriminoColors = MutableStateFlow(TetriminoColors())
 
@@ -63,6 +66,10 @@ class GameScreenViewModel(
     if (it < warningThreshold) Color.Red else Color.LightGray
   }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), Color.LightGray)
 
+  // High score for current duration
+  val currentHighScore = gameStatsData.highScores[gameSettings.gameDuration.value]?.value ?: 0
+  val currentHighScoreText = MutableStateFlow(gameStatsData.formatHighScoreText(gameSettings.gameDuration.value))
+
   private var timerJob: Job? = null
 
   // Initialize the time remaining when game settings change
@@ -71,6 +78,7 @@ class GameScreenViewModel(
       gameSettings.gameDuration.collect { duration ->
         if (_gameState.value == GameState.NotStarted) {
           timeRemaining.value = duration
+          currentHighScoreText.value = gameStatsData.formatHighScoreText(duration)
         }
       }
     }
@@ -144,10 +152,23 @@ class GameScreenViewModel(
       addScore(completedLines)
 
       if (!spawnNewPiece()) {
-        _gameState.value = GameState.GameOver
-        gameJob?.cancel()
+        gameOver()
       }
     }
+  }
+
+  private fun gameOver() {
+    // Update high score if needed
+    val currentScore = score.value
+    val nBackLevel = nback.level.value
+    val gameDuration = gameSettings.gameDuration.value
+
+    gameStatsData.updateHighScore(gameDuration, currentScore, nBackLevel)
+    currentHighScoreText.value = gameStatsData.formatHighScoreText(gameDuration)
+
+    // Set game state to game over
+    _gameState.value = GameState.GameOver
+    gameJob?.cancel()
   }
 
   fun leftClicked() {
@@ -308,8 +329,7 @@ class GameScreenViewModel(
       }
 
       if (timeRemaining.value <= 0 && _gameState.value == GameState.Running) {
-        _gameState.value = GameState.GameOver
-        gameJob?.cancel()
+        gameOver()
       }
     }
   }

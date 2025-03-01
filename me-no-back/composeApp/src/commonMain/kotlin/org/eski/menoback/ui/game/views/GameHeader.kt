@@ -1,13 +1,8 @@
 package org.eski.menoback.ui.game.views
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Card
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
@@ -21,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.eski.menoback.ui.game.vm.GameScreenViewModel
@@ -40,6 +36,7 @@ fun GameHeader(
   val timerColor by vm.timerColor.collectAsState()
   val gameState by vm.gameState.collectAsState()
   val gameDuration by gameSettings.gameDuration.collectAsState()
+  val highScoreText by vm.currentHighScoreText.collectAsState()
 
   Column(
     horizontalAlignment = Alignment.CenterHorizontally
@@ -52,6 +49,27 @@ fun GameHeader(
     )
 
     Spacer(modifier = Modifier.height(8.dp))
+
+    // High score display - only show on start screen
+    if (gameState == GameState.NotStarted) {
+      Card(
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(bottom = 8.dp),
+        backgroundColor = Color(0xFF444444),
+        shape = RoundedCornerShape(8.dp),
+        elevation = 2.dp
+      ) {
+        Text(
+          text = highScoreText,
+          fontSize = 16.sp,
+          fontWeight = FontWeight.Medium,
+          color = Color.Yellow,
+          textAlign = TextAlign.Center,
+          modifier = Modifier.padding(vertical = 8.dp)
+        )
+      }
+    }
 
     Row(
       modifier = Modifier.fillMaxWidth(),
