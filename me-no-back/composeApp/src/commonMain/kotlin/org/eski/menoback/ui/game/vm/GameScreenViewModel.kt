@@ -28,7 +28,8 @@ import kotlin.random.Random
 
 
 const val nbackMatchBias = 0.15f
-const val GAME_DURATION_SECONDS = 60
+const val gameDurationSeconds = 60
+const val initialGameTickRate = 1000L
 
 class GameScreenViewModel : ViewModel() {
   val tetriminoColors = MutableStateFlow(TetriminoColors())
@@ -49,18 +50,13 @@ class GameScreenViewModel : ViewModel() {
   }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), Board())
 
   val nback = GameNbackViewModel(viewModelScope, _gameState, currentTetrimino)
-
   val score = MutableStateFlow<Int>(0)
+  private val gameSpeed = MutableStateFlow(initialGameTickRate)
 
-  // Game speed (milliseconds per tick)
-  private var _gameSpeed by mutableStateOf(1000L)
-  val gameSpeed: Long get() = _gameSpeed
-
-  // Game job for coroutine
   private var gameJob: Job? = null
   private val gameScope = CoroutineScope(Dispatchers.Default)
 
-  private var _timeRemaining by mutableStateOf(GAME_DURATION_SECONDS)
+  private var _timeRemaining by mutableStateOf(gameDurationSeconds)
   val timeRemaining: Int get() = _timeRemaining
 
   private var timerJob: Job? = null
@@ -100,17 +96,16 @@ class GameScreenViewModel : ViewModel() {
     tetriminoHistory.clear()
     nback.streak.value = 0
     score.value = 0
-    _gameSpeed = 1000L
-    _timeRemaining = GAME_DURATION_SECONDS
+    gameSpeed.value = initialGameTickRate
+    _timeRemaining = gameDurationSeconds
     _gameState.value = GameState.NotStarted
   }
-
 
   private fun startGameLoop() {
     gameJob?.cancel()
     gameJob = gameScope.launch {
-      while (_gameState.value == GameState.Running) {
-        delay(_gameSpeed)
+      while (gameState.value == GameState.Running) {
+        delay(gameSpeed.value)
         tick()
       }
     }
@@ -277,7 +272,6 @@ class GameScreenViewModel : ViewModel() {
   }
 
   private fun addScore(completedLines: Int) {
-    // Score based on number of lines completed with multiplier
     val baseScore = when (completedLines) {
       0 -> 20
       1 -> 100
@@ -286,17 +280,7 @@ class GameScreenViewModel : ViewModel() {
       4 -> 1000
       else -> 0
     }
-
     score.value += (baseScore * nback.multiplier.value).toInt()
-
-    // Increase game speed based on score milestones
-    if (score.value > 5000 && _gameSpeed > 500) {
-      _gameSpeed = 500L
-    } else if (score.value > 3000 && _gameSpeed > 700) {
-      _gameSpeed = 700L
-    } else if (score.value > 1000 && _gameSpeed > 850) {
-      _gameSpeed = 850L
-    }
   }
 
   private fun spawnNewPiece(): Boolean {
