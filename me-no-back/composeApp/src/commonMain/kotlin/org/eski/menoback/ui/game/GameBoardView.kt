@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import org.eski.menoback.model.Board
 import org.eski.menoback.ui.TetriminoColors
+import org.eski.menoback.ui.game.vm.GameScreenViewModel
 
 
 @Composable

@@ -22,6 +22,7 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
 import kotlinx.coroutines.delay
+import org.eski.menoback.ui.game.vm.GameScreenViewModel
 
 const val repeatDelayMillis = 250L
 const val repeatTickMillis = 50L
@@ -81,7 +82,7 @@ fun KeyboardInput(vm: GameScreenViewModel) {
           Key.DirectionLeft -> leftPressed = false
           Key.DirectionRight -> rightPressed = false
           Key.DirectionDown -> downPressed = false
-          Key.Z -> vm.nBackMatch()
+          Key.Z -> vm.nbackMatchChoice()
         }
       }
 

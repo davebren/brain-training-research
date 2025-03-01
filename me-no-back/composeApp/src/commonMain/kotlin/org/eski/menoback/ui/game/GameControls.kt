@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.eski.menoback.ui.game.vm.GameScreenViewModel
 
 
 @Composable
@@ -92,7 +93,7 @@ fun GameControls(
 fun NBackControls(
   vm: GameScreenViewModel,
 ) {
-  val nbackLevel by vm.nbackLevel.collectAsState()
+  val nbackLevel by vm.nback.level.collectAsState()
 
   Column(
     horizontalAlignment = Alignment.CenterHorizontally
@@ -111,7 +112,7 @@ fun NBackControls(
       horizontalArrangement = Arrangement.SpaceEvenly
     ) {
       Button(
-        onClick = { vm.nBackMatch() },
+        onClick = { vm.nbackMatchChoice() },
         colors = ButtonDefaults.buttonColors(backgroundColor = Color.Green)
       ) {
         Text("Match")

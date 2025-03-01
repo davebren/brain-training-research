@@ -16,13 +16,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.eski.menoback.ui.game.vm.GameScreenViewModel
 
 @Composable
 fun NBackLevelSelector(
   vm: GameScreenViewModel,
   modifier: Modifier = Modifier
 ) {
-  val nbackLevel by vm.nbackLevel.collectAsState()
+  val nbackLevel by vm.nback.level.collectAsState()
 
   Column(
     modifier = modifier,
@@ -41,7 +42,7 @@ fun NBackLevelSelector(
       verticalAlignment = Alignment.CenterVertically
     ) {
       Button(
-        onClick = { vm.decreaseNBackLevel() },
+        onClick = { vm.nback.decreaseLevel() },
         modifier = Modifier.size(40.dp)
       ) {
         Icon(Icons.Filled.Close, contentDescription = "Decrease N-Back Level")
@@ -60,7 +61,7 @@ fun NBackLevelSelector(
       Spacer(modifier = Modifier.width(8.dp))
 
       Button(
-        onClick = { vm.increaseNBackLevel() },
+        onClick = { vm.nback.increaseLevel() },
         modifier = Modifier.size(40.dp)
       ) {
         Icon(Icons.Default.Add, contentDescription = "Increase N-Back Level")

@@ -23,6 +23,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.eski.menoback.ui.game.vm.GameScreenViewModel
+import org.eski.menoback.ui.game.vm.GameState
 
 @Composable
 fun GameStatus(

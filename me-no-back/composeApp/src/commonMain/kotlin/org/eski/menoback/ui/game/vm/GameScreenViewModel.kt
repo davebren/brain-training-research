@@ -1,4 +1,4 @@
-package org.eski.menoback.ui.game
+package org.eski.menoback.ui.game.vm
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -14,7 +14,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.eski.menoback.model.Board
@@ -23,6 +22,7 @@ import org.eski.menoback.model.boardHeight
 import org.eski.menoback.model.boardWidth
 import org.eski.menoback.model.newTetriminoStartPosition
 import org.eski.menoback.ui.TetriminoColors
+import org.eski.menoback.ui.game.Rotation
 import org.eski.util.deepCopy
 import kotlin.random.Random
 
@@ -48,17 +48,7 @@ class GameScreenViewModel : ViewModel() {
     else board.with(tetrimino, position)
   }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), Board())
 
-  // TODO: Move into separate class.
-  private var nBackDecisionMade = false
-  val nbackLevel = MutableStateFlow(1)
-  val nbackStreak = MutableStateFlow(0)
-  val nbackMultiplier = combine(nbackLevel, nbackStreak) { level, streak ->
-    1.0f + (streak * (level * 2) * 0.1f)
-  }.stateIn(viewModelScope, SharingStarted.Eagerly, 1f)
-  val nbackMultiplierText = nbackMultiplier.map {
-    if (!it.toString().contains('.')) "${it}x"
-    else "${it.toString().subSequence(0, it.toString().indexOf('.') + 2)}x"
-  }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), "1.0x")
+  val nback = GameNbackViewModel(viewModelScope, _gameState, currentTetrimino)
 
   // Score
   private var _score by mutableStateOf(0)
@@ -76,19 +66,6 @@ class GameScreenViewModel : ViewModel() {
   val timeRemaining: Int get() = _timeRemaining
 
   private var timerJob: Job? = null
-
-  // New methods to increase/decrease n-back level before game starts
-  fun increaseNBackLevel() {
-    if (_gameState.value == GameState.NotStarted && nbackLevel.value < 15) {
-      nbackLevel.value++
-    }
-  }
-
-  fun decreaseNBackLevel() {
-    if (_gameState.value == GameState.NotStarted && nbackLevel.value > 1) {
-      nbackLevel.value--
-    }
-  }
 
   fun startGame() {
     if (_gameState.value != GameState.Running) {
@@ -123,7 +100,7 @@ class GameScreenViewModel : ViewModel() {
     currentTetrimino.value = null
     nextTetrimino.value = null
     tetriminoHistory.clear()
-    nbackStreak.value = 0
+    nback.streak.value = 0
     _score = 0
     _gameSpeed = 1000L
     _timeRemaining = GAME_DURATION_SECONDS
@@ -219,31 +196,9 @@ class GameScreenViewModel : ViewModel() {
     return valid
   }
 
-  fun nBackMatch() {
-    if (_gameState.value != GameState.Running || nBackDecisionMade) return
-    nBackDecisionMade = true
+  fun nbackMatchChoice() = nback.matchChoice(tetriminoHistory)
 
-    val correct = if (tetriminoHistory.size > nbackLevel.value) {
-      val nBackPiece = tetriminoHistory[tetriminoHistory.size - nbackLevel.value - 1]
-      currentTetrimino.value?.type == nBackPiece.type
-    } else {
-      false
-    }
-
-    nbackStreak.value = if (correct) { nbackStreak.value + 1 } else 0
-  }
-
-  fun nBackNoMatch() {
-    if (_gameState.value != GameState.Running || nBackDecisionMade) return
-    nBackDecisionMade = true
-
-    val correct = if (tetriminoHistory.size > nbackLevel.value) {
-      val nBackPiece = tetriminoHistory[tetriminoHistory.size - nbackLevel.value - 1]
-      currentTetrimino.value?.type != nBackPiece.type
-    } else true
-
-    nbackStreak.value = if (correct) { nbackStreak.value + 1 } else 0
-  }
+  fun nbackNoMatchChoice() = nback.noMatchChoice(tetriminoHistory)
 
   // TODO: Move to Board.kt.
   private fun isValidPosition(
@@ -279,7 +234,7 @@ class GameScreenViewModel : ViewModel() {
     val tetrimino = currentTetrimino.value ?: return
     val position = currentPiecePosition.value ?: return
 
-    if (!nBackDecisionMade) nBackNoMatch()
+    if (!nback.matchChoiceMade) nbackNoMatchChoice()
 
     val boardUpdate = mutableMapOf<Int, Map<Int, Int>>()
 
@@ -334,7 +289,7 @@ class GameScreenViewModel : ViewModel() {
       else -> 0
     }
 
-    _score += (baseScore * nbackMultiplier.value).toInt()
+    _score += (baseScore * nback.multiplier.value).toInt()
 
     // Increase game speed based on score milestones
     if (_score > 5000 && _gameSpeed > 500) {
@@ -349,10 +304,10 @@ class GameScreenViewModel : ViewModel() {
   private fun spawnNewPiece(): Boolean {
     val spawnedPiece = nextTetrimino.value ?: generateRandomPiece()
     nextTetrimino.value = if (Random.nextFloat() < nbackMatchBias) {
-      if (nbackLevel.value == 1) {
+      if (nback.level.value == 1) {
         spawnedPiece.copy()
       } else {
-        tetriminoHistory.getOrNull((tetriminoHistory.size) - nbackLevel.value) ?: generateRandomPiece()
+        tetriminoHistory.getOrNull((tetriminoHistory.size) - nback.level.value) ?: generateRandomPiece()
       }
     } else generateRandomPiece()
 
@@ -360,7 +315,7 @@ class GameScreenViewModel : ViewModel() {
     currentPiecePosition.value = newTetriminoStartPosition
 
     tetriminoHistory.add(spawnedPiece)
-    nBackDecisionMade = false
+    nback.clearMatchChoice()
 
     return isValidPosition(currentTetrimino.value, newTetriminoStartPosition)
   }

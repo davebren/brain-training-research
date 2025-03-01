@@ -16,14 +16,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.eski.menoback.ui.game.vm.GameScreenViewModel
 
 @Composable
 fun GameHeader(
   vm: GameScreenViewModel
 ) {
-  val nbackLevel by vm.nbackLevel.collectAsState()
-  val nbackStreak by vm.nbackStreak.collectAsState()
-  val nbackMultiplierText by vm.nbackMultiplierText.collectAsState()
+  val nbackLevel by vm.nback.level.collectAsState()
+  val nbackStreak by vm.nback.streak.collectAsState()
+  val nbackMultiplierText by vm.nback.multiplierText.collectAsState()
 
   Column(
     horizontalAlignment = Alignment.CenterHorizontally
